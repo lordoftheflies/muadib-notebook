@@ -33,10 +33,13 @@ class TestHook(unittest.TestCase):
             'sample_tuple',
         ])
 
+        given_module.sample_instance.sample_method()
+        given_module.sample_instance.sample_method_with_inoutput(param='omega', param_a='alfa', param_b='beta')
+
     def test_execute(self):
         print(os.path.abspath(os.path.curdir))
         with muadib_notebook.NotebookExecutor(
-                path=os.path.join('..','notebooks'),
+                path=os.path.join('..', 'notebooks'),
                 fullname='test_notebook'
         ) as e:
             e()

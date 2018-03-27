@@ -1,4 +1,6 @@
 import io, os, sys, types
+import json
+
 from IPython import get_ipython
 from nbformat import read
 import nbformat
