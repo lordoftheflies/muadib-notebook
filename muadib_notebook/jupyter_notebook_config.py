@@ -38,16 +38,19 @@
 # ------------------------------------------------------------------------------
 
 ## Set the Access-Control-Allow-Credentials: true header
-from notebook.services.contents.filemanager import FileContentsManager
-from pgcontents.hybridmanager import HybridContentsManager
+# from notebook.services.contents.filemanager import FileContentsManager
+# from pgcontents.hybridmanager import HybridContentsManager
 
-c.NotebookApp.allow_credentials = True
+# c.NotebookApp.allow_credentials = True
 
 ## Set the Access-Control-Allow-Origin header
 #  
 #  Use '*' to allow any origin to access your server.
 #  
 #  Takes precedence over allow_origin_pat.
+from notebook.services.contents.filemanager import FileContentsManager
+from pgcontents.hybridmanager import HybridContentsManager
+
 c.NotebookApp.allow_origin = '*'
 
 ## Use a regular expression for the Access-Control-Allow-Origin header
@@ -67,7 +70,7 @@ c.NotebookApp.allow_origin = '*'
 ## The base URL for the notebook server.
 #  
 #  Leading and trailing slashes can be omitted, and will automatically be added.
-c.NotebookApp.base_url = '/webconsole/'
+# c.NotebookApp.base_url = '/webconsole/'
 
 ## Specify what command to use to invoke a web browser when opening the notebook.
 #  If not specified, the default browser will be determined by the `webbrowser`
@@ -83,7 +86,7 @@ c.NotebookApp.base_url = '/webconsole/'
 # c.NotebookApp.client_ca = ''
 
 ## The config manager class to use
-c.NotebookApp.config_manager_class = 'notebook.services.config.manager.ConfigManager'
+# c.NotebookApp.config_manager_class = 'notebook.services.config.manager.ConfigManager'
 
 ## The notebook manager class to use.
 # c.NotebookApp.contents_manager_class = 'notebook.services.contents.filemanager.FileContentsManager'
@@ -104,7 +107,7 @@ c.NotebookApp.config_manager_class = 'notebook.services.config.manager.ConfigMan
 # c.NotebookApp.cookie_secret_file = ''
 
 ## The default URL to redirect to from `/`
-c.NotebookApp.default_url = '/tree'
+# c.NotebookApp.default_url = '/tree'
 
 ## Disable cross-site-request-forgery protection
 #  
@@ -118,7 +121,7 @@ c.NotebookApp.default_url = '/tree'
 #  completely without authentication. These services can disable all
 #  authentication and security checks, with the full knowledge of what that
 #  implies.
-c.NotebookApp.disable_check_xsrf = True
+# c.NotebookApp.disable_check_xsrf = True
 
 ## Whether to enable MathJax for typesetting math/TeX
 #  
@@ -127,7 +130,7 @@ c.NotebookApp.disable_check_xsrf = True
 #  connection, or for offline use of the notebook.
 #  
 #  When disabled, equations etc. will appear as their untransformed TeX source.
-c.NotebookApp.enable_mathjax = True
+# c.NotebookApp.enable_mathjax = True
 
 ## extra paths to look for Javascript notebook extensions
 # c.NotebookApp.extra_nbextensions_path = []
@@ -587,8 +590,8 @@ c.NotebookApp.enable_mathjax = True
 # c.KernelSpecManager.whitelist = set()
 
 from pgcontents import PostgresContentsManager, PostgresCheckpoints
-
-# Tell IPython to use PostgresContentsManager for all storage.
+#
+# # Tell IPython to use PostgresContentsManager for all storage.
 c.NotebookApp.contents_manager_class = HybridContentsManager
 
 c.HybridContentsManager.manager_classes = {
@@ -619,10 +622,11 @@ c.HybridContentsManager.manager_kwargs = {
         'root_dir': './notebooks',
     },
 }
+# c.NotebookApp.contents_manager_class = PostgresContentsManager
 
-# c.PostgresContentsManager.db_url =
-# c.PostgresContentsManager.user_id = 'jupyter'
-
+# c.PostgresContentsManager.db_url = 'postgresql://jupyter:qwe123@localhost/pgcontents'
+# # c.PostgresContentsManager.user_id = 'jupyter'
+#
 # c.PostgresContentsManager.max_file_size_bytes = 1000000  # 1MB File cap
 
 # Tell IPython to use PostgresCheckpoints for checkpoint storage.
