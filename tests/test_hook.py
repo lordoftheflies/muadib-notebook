@@ -1,7 +1,5 @@
-import unittest
-
 import os
-from importlib._bootstrap_external import _NamespacePath
+import unittest
 
 import muadib_notebook
 

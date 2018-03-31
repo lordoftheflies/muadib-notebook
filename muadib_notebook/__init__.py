@@ -1,11 +1,13 @@
-import io, os, sys, types
-import json
+import io
+import os
+import sys
+import types
 
-from IPython import get_ipython
-from nbformat import read
 import nbformat
-from nbconvert.preprocessors import ExecutePreprocessor
+from IPython import get_ipython
 from IPython.core.interactiveshell import InteractiveShell
+from nbconvert.preprocessors import ExecutePreprocessor
+from nbformat import read
 
 
 def find_notebook(fullname, path=None, extension=".ipynb"):
@@ -93,6 +95,7 @@ class NotebookFinder(object):
 
 
 class NotebookExecutor(object):
+    """Executor that execute notebooks"""
 
     def __init__(self, fullname, path=None, extension="ipynb", kernel_name='python3', timeout=600):
         super().__init__()
