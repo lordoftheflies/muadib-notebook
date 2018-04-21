@@ -28,6 +28,8 @@ class BaseConfiguration(Configuration):
     # SECURITY WARNING: don't run with debug turned on in production!
     DEBUG = True
 
+    SITE_ID = 1
+
     ALLOWED_HOSTS = []
 
     # Application definition
@@ -39,6 +41,29 @@ class BaseConfiguration(Configuration):
         'django.contrib.sessions',
         'django.contrib.messages',
         'django.contrib.staticfiles',
+        'django.contrib.sites',
+        'django_extensions',
+
+        'rest_framework',
+        'rest_framework.authtoken',
+        'allauth',
+        'allauth.account',
+        'allauth.socialaccount',
+        'allauth.socialaccount.providers.facebook',
+        'allauth.socialaccount.providers.bitbucket',
+        'allauth.socialaccount.providers.github',
+        'allauth.socialaccount.providers.gitlab',
+        'allauth.socialaccount.providers.google',
+        'allauth.socialaccount.providers.paypal',
+        'allauth.socialaccount.providers.slack',
+        'allauth.socialaccount.providers.windowslive',
+
+        'rest_auth',
+        'rest_auth.registration',
+
+        # 'presentation',
+        # 'tracking'
+
     ]
 
     MIDDLEWARE = [
@@ -98,6 +123,14 @@ class BaseConfiguration(Configuration):
             'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
         },
     ]
+
+    AUTHENTICATION_BACKENDS = (
+        # Needed to login by username in Django admin, regardless of `allauth`
+        'django.contrib.auth.backends.ModelBackend',
+
+        # `allauth` specific authentication methods, such as login by e-mail
+        'allauth.account.auth_backends.AuthenticationBackend',
+    )
 
     # Internationalization
     # https://docs.djangoproject.com/en/2.0/topics/i18n/
