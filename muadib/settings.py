@@ -61,7 +61,7 @@ class BaseConfiguration(Configuration):
         'rest_auth',
         'rest_auth.registration',
 
-        # 'presentation',
+        'presentation',
         # 'tracking'
 
     ]
