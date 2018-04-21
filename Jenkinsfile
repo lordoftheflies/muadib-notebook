@@ -16,7 +16,7 @@ pipeline {
   stages {
     stage('Prequisites') {
       steps {
-        git(url: "${SCM_URL}", branch: "${DEVELOP_BRANCH}", changelog: true, credentialsId: "${CREDENTIALS}", poll: true)
+        git([url: "${SCM_URL}", branch: "${DEVELOP_BRANCH}", changelog: true, credentialsId: "${CREDENTIALS}", poll: true])
 
         sh '''if [ ! -d "$VIRTUAL_ENVIRONMENT_DIRECTORY" ]; then
             virtualenv --no-site-packages -p $PYTHON_EXECUTABLE $VIRTUAL_ENVIRONMENT_DIRECTORY
