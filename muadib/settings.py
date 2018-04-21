@@ -74,6 +74,8 @@ class BaseConfiguration(Configuration):
         'django.contrib.auth.middleware.AuthenticationMiddleware',
         'django.contrib.messages.middleware.MessageMiddleware',
         'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
+        'muadib.middleware.MethodOverrideMiddleware',
     ]
 
     ROOT_URLCONF = 'muadib.urls'
@@ -104,6 +106,20 @@ class BaseConfiguration(Configuration):
             'ENGINE': 'django.db.backends.sqlite3',
             'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
         }
+    }
+
+    REST_SESSION_LOGIN = False
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+    ACCOUNT_EMAIL_REQUIRED = False
+    ACCOUNT_AUTHENTICATION_METHOD = 'username'
+    ACCOUNT_EMAIL_VERIFICATION = 'optional'
+
+    REST_FRAMEWORK = {
+        'DEFAULT_AUTHENTICATION_CLASSES': (
+            # 'rest_framework.authentication.SessionAuthentication',
+            'rest_framework.authentication.TokenAuthentication',
+        )
     }
 
     # Password validation
