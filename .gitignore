@@ -50,6 +50,7 @@ coverage.xml
 
 # Django stuff:
 *.log
+*.sqlite3
 
 # Sphinx documentation
 docs/_build/
@@ -58,3 +59,6 @@ docs/_build/
 target/
 
 .idea/
+
+# Bower componens
+**/bower_components/
