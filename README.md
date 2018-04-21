@@ -14,3 +14,10 @@ Then import notebooks as a module:
 import notebooks.test_notebook as given_module
 ```
 *This means you have a notebook directory which contains an test_notebook.ipynb called notebook.*
+
+
+Start webconsole
+
+```sh
+jupyter lab --config=./muadib_notebook/jupyter_notebook_config.py
+```
