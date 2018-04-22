@@ -64,9 +64,12 @@ class BaseConfiguration(Configuration):
         'django_celery_results',
         'django_celery_beat',
 
+        'djangobower',
+
         'presentation',
-        'instrumentation'
-        # 'tracking'
+        'instrumentation',
+        'engine',
+        'simulator'
 
     ]
 
@@ -172,6 +175,38 @@ class BaseConfiguration(Configuration):
     # https://docs.djangoproject.com/en/2.0/howto/static-files/
 
     STATIC_URL = '/static/'
+    STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
+    BOWER_COMPONENTS_ROOT = os.path.join(BASE_DIR, 'components')
+    BOWER_INSTALLED_APPS = (
+        "PolymerElements/app-layout#^2.0.0",
+        "PolymerElements/app-route#^2.0.0",
+        "PolymerElements/iron-ajax#^2.1.3",
+        "PolymerElements/iron-flex-layout#^2.0.0",
+        "PolymerElements/iron-iconset-svg#^2.0.0",
+        "PolymerElements/iron-icon",
+        "PolymerElements/iron-list#^2.0.14",
+        "PolymerElements/iron-media-query#^2.0.0",
+        "PolymerElements/iron-pages#^2.0.0",
+        "PolymerElements/iron-selector#^2.0.0",
+        "PolymerElements/paper-button",
+        "PolymerElements/paper-card#^2.1.0",
+        "PolymerElements/paper-icon-button#^2.0.0",
+        "PolymerElements/paper-item#^2.1.1",
+        "Polymer/polymer#^2.0.0",
+        "webcomponents/webcomponentsjs#^1.0.0"
+    )
+
+    # Add it on your settings.py file
+    # STATICFILES_DIRS = [
+    #     os.path.join(BASE_DIR, "static"),  # your static/ files folder
+    # ]
+    STATICFILES_FINDERS = (
+        'django.contrib.staticfiles.finders.FileSystemFinder',
+        'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+        'djangobower.finders.BowerFinder',
+        #    'django.contrib.staticfiles.finders.DefaultStorageFinder',
+    )
 
     LOGGING = {
         'version': 1,

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from instrumentation.models import EquipmentModel
+from instrumentation.models import EquipmentModel, SchemaModel
 
 
 class EquipmentSerializer(serializers.ModelSerializer):
@@ -10,5 +10,5 @@ class EquipmentSerializer(serializers.ModelSerializer):
 
 class SchemaSerializer(serializers.ModelSerializer):
     class Meta:
-        model = EquipmentModel
+        model = SchemaModel
         fields = ['id', 'distinguished_name', 'display_name', 'description']
