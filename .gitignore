@@ -51,6 +51,10 @@ coverage.xml
 # Django stuff:
 *.log
 *.sqlite3
+*.sqlite
+
+# Jupyterhub
+jupyterhub_cookie_secret
 
 # Sphinx documentation
 docs/_build/
