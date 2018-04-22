@@ -6,7 +6,6 @@ django-extensions==2.0.7
 django-filter==1.1.0
 django-rest-auth==0.9.3
 djangorestframework==3.8.2
-ipywidgets==7.2.0
 jupyter==1.0.0
 jupyter-client==5.2.3
 jupyter-console==5.2.0
