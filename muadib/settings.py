@@ -61,7 +61,11 @@ class BaseConfiguration(Configuration):
         'rest_auth',
         'rest_auth.registration',
 
+        'django_celery_results',
+        'django_celery_beat',
+
         'presentation',
+        'instrumentation'
         # 'tracking'
 
     ]
@@ -147,6 +151,9 @@ class BaseConfiguration(Configuration):
         # `allauth` specific authentication methods, such as login by e-mail
         'allauth.account.auth_backends.AuthenticationBackend',
     )
+
+    CELERY_RESULT_BACKEND = 'django-db'
+    CELERY_TIMEZONE = 'Europe/Oslo'
 
     # Internationalization
     # https://docs.djangoproject.com/en/2.0/topics/i18n/
