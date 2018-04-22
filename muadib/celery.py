@@ -1,12 +1,20 @@
 from __future__ import absolute_import, unicode_literals
+
+import logging
 import os
 from celery import Celery
 
 # set the default Django settings module for the 'celery' program.
+from kombu import Queue
+
+from instrumentation.apps import DeviceManager
+
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'muadib.settings')
 os.environ.setdefault('DJANGO_CONFIGURATION', 'DevelopmentConfiguration')
 
 import configurations
+
+
 configurations.setup()
 
 app = Celery('muadib')
@@ -19,6 +27,17 @@ app.config_from_object('django.conf:settings', namespace='CELERY')
 
 # Load task modules from all registered Django app configs.
 app.autodiscover_tasks()
+
+app.conf.task_default_queue = 'default'
+
+DeviceManager().setup()
+
+
+# app.conf.task_routes = {
+#     'instrumentation.tasks.status': {
+#         'queue': 'feeds'
+#     }
+# }
 
 
 @app.task(bind=True)

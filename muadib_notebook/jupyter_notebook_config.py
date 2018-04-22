@@ -634,3 +634,9 @@ c.HybridContentsManager.manager_kwargs = {
 
 # Tell IPython to use PostgresCheckpoints for checkpoint storage.
 c.NotebookApp.checkpoints_class = PostgresCheckpoints
+
+# A list of dotted module names of IPython extensions to load.
+c.InteractiveShellApp.extensions = [
+    # .. your other extensions if available
+    'configurations',
+]

@@ -5,6 +5,8 @@ from django.utils.translation import gettext as _
 
 
 # Create your models here.
+from kombu import Queue
+
 
 class EnumerationModel(models.Model):
     class Meta:
@@ -28,6 +30,7 @@ class EnumerationModel(models.Model):
         blank=True,
         null=True
     )
+
 
 class ConstantModel(models.Model):
     class Meta:
@@ -213,3 +216,11 @@ class EquipmentModel(models.Model):
     @configuration.setter
     def configuration(self, value):
         self._configuration = json.dumps(value)
+
+    def attache_queue(self):
+        from muadib.celery import app
+        originals = list(app.conf.task_queues) if app.conf.task_queues is not None else []
+        originals.append(Queue(self.distinguished_name, routing_key='%s.#' % self.distinguished_name))
+        app.conf.update(
+            task_queues=originals
+        )

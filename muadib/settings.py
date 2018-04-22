@@ -153,7 +153,7 @@ class BaseConfiguration(Configuration):
     )
 
     CELERY_RESULT_BACKEND = 'django-db'
-    CELERY_TIMEZONE = 'Europe/Oslo'
+
 
     # Internationalization
     # https://docs.djangoproject.com/en/2.0/topics/i18n/
@@ -235,7 +235,6 @@ class DevelopmentConfiguration(BaseConfiguration):
     def post_setup(cls):
         super(DevelopmentConfiguration, cls).post_setup()
         logging.debug("Configuration setup succeed: %s", cls)
-
 
 class StagingConfiguration(BaseConfiguration):
     """
