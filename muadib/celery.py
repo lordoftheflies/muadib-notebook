@@ -1,13 +1,11 @@
 from __future__ import absolute_import, unicode_literals
 
-import logging
 import os
+
 from celery import Celery
 
 # set the default Django settings module for the 'celery' program.
-from kombu import Queue
 
-from instrumentation.apps import DeviceManager
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'muadib.settings')
 os.environ.setdefault('DJANGO_CONFIGURATION', 'DevelopmentConfiguration')
@@ -30,7 +28,10 @@ app.autodiscover_tasks()
 
 app.conf.task_default_queue = 'default'
 
-DeviceManager().setup()
+# in the app bootstraping
+# eventlet.monkey_patch()
+# server = socketio.()
+# socketio.init_app(app, message_queue=app.conf.broker_url)
 
 
 # app.conf.task_routes = {

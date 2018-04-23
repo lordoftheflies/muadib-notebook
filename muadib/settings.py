@@ -157,7 +157,6 @@ class BaseConfiguration(Configuration):
 
     CELERY_RESULT_BACKEND = 'django-db'
 
-
     # Internationalization
     # https://docs.djangoproject.com/en/2.0/topics/i18n/
 
@@ -185,16 +184,37 @@ class BaseConfiguration(Configuration):
         "PolymerElements/iron-flex-layout#^2.0.0",
         "PolymerElements/iron-iconset-svg#^2.0.0",
         "PolymerElements/iron-icon",
+        "PolymerElements/iron-image#^2.2.0",
+        "PolymerElements/iron-input#^2.1.1",
         "PolymerElements/iron-list#^2.0.14",
         "PolymerElements/iron-media-query#^2.0.0",
         "PolymerElements/iron-pages#^2.0.0",
         "PolymerElements/iron-selector#^2.0.0",
         "PolymerElements/paper-button",
         "PolymerElements/paper-card#^2.1.0",
+        "PolymerElements/paper-checkbox#^2.0.2",
+        "PolymerElements/paper-dialog#^2.1.1",
+        "PolymerElements/paper-dropdown-menu#^2.0.3",
+        "PolymerElements/paper-fab#^2.1.0",
         "PolymerElements/paper-icon-button#^2.0.0",
+        "PolymerElements/paper-input#^2.2.0",
         "PolymerElements/paper-item#^2.1.1",
+        "PolymerElements/paper-listbox#^2.1.0",
+        "PolymerElements/paper-menu-button#^2.1.0",
+        "PolymerElements/paper-progress#^2.1.0",
+        "PolymerElements/paper-radio-button#^2.0.0",
+        "PolymerElements/paper-radio-group#^2.1.0",
+        "PolymerElements/paper-spinner#^2.1.0",
+        "PolymerElements/paper-tabs#^2.0.0",
+        "PolymerElements/paper-toast#^2.1.0",
         "Polymer/polymer#^2.0.0",
-        "webcomponents/webcomponentsjs#^1.0.0"
+        "webcomponents/webcomponentsjs#^1.0.0",
+        "web-animations-js#^2.3.1",
+        "socket.io-client#^2.0.1",
+        "chartjs#2.7.1",
+        "chartjs-plugin-datalabels#0.2.0",
+        "git://github.com/lordoftheflies/moment-js#^0.7.2",
+        "git://github.com/lordoftheflies/paper-time-picker#master",
     )
 
     # Add it on your settings.py file
@@ -249,6 +269,12 @@ class BaseConfiguration(Configuration):
         },
     }
 
+    SOCKETIO_PORT = 9001
+    SOCKETIO_HOST = ''
+    SOCKETIO_ASYNC_MODE = 'gevent'
+
+    VISA_LIBRARY = 'instrumentation.yaml@sim'
+
 
 class DevelopmentConfiguration(BaseConfiguration):
     """
@@ -270,6 +296,7 @@ class DevelopmentConfiguration(BaseConfiguration):
     def post_setup(cls):
         super(DevelopmentConfiguration, cls).post_setup()
         logging.debug("Configuration setup succeed: %s", cls)
+
 
 class StagingConfiguration(BaseConfiguration):
     """

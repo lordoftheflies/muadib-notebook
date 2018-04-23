@@ -1,3 +1,6 @@
+import os
+
+import socketio
 from django.shortcuts import render
 from rest_framework import viewsets, permissions, renderers
 from rest_framework.decorators import action
@@ -41,3 +44,4 @@ class EquipmentViewSet(viewsets.ModelViewSet):
     def schema(self, request, *args, **kwargs):
         equipment_entity = self.get_object()
         return Response(equipment_entity.schema)
+

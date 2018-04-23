@@ -3,7 +3,6 @@ import json
 from django.db import models
 from django.utils.translation import gettext as _
 
-
 # Create your models here.
 from kombu import Queue
 
@@ -209,6 +208,10 @@ class EquipmentModel(models.Model):
         verbose_name=_('Configuration')
     )
 
+    address = models.TextField(
+        verbose_name=_('Address')
+    )
+
     @property
     def configuration(self):
         return json.loads(self._configuration)
@@ -217,10 +220,12 @@ class EquipmentModel(models.Model):
     def configuration(self, value):
         self._configuration = json.dumps(value)
 
-    def attache_queue(self):
+    def attache_queue(self) -> Queue:
         from muadib.celery import app
         originals = list(app.conf.task_queues) if app.conf.task_queues is not None else []
-        originals.append(Queue(self.distinguished_name, routing_key='%s.#' % self.distinguished_name))
+        queue = Queue(self.distinguished_name, routing_key='%s.#' % self.distinguished_name)
+        originals.append(queue)
         app.conf.update(
             task_queues=originals
         )
+        return queue
