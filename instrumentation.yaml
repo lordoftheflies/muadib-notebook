@@ -1,6 +1,6 @@
 spec: "1.0"
 devices:
-  device 1:
+  ek895:
     eom:
       ASRL INSTR:
         q: "\r\n"
@@ -83,7 +83,7 @@ devices:
         specs:
           valid: [0, 1, 2, 3]
           type: int
-  device 2:
+  hp8591e:
     eom:
       ASRL INSTR:
         q: "\r\n"
@@ -148,7 +148,7 @@ devices:
         specs:
           valid: [0, 1]
           type: int
-  device 3:
+  yaesu:
     eom:
       ASRL INSTR:
         q: "\r\n"
@@ -207,7 +207,7 @@ devices:
           r: "{:d}"
         setter:
           q: "OUTP {:d}"
-  device 4:
+  esmb:
     eom:
       ASRL INSTR:
         q: "\r\n"
@@ -244,38 +244,38 @@ devices:
 
 resources:
   ASRL1::INSTR:
-    device: device 1
+    device: ek895
   USB::0x1111::0x2222::0x1234::INSTR:
-    device: device 1
+    device: ek895
   TCPIP::localhost::INSTR:
-    device: device 1
+    device: ek895
   TCPIP::localhost::10001::SOCKET:
-    device: device 1
+    device: ek895
   GPIB::8::INSTR:
-    device: device 1
+    device: ek895
   ASRL2::INSTR:
-    device: device 2
+    device: hp8591e
   USB::0x1111::0x2222::0x2468::INSTR:
-    device: device 2
+    device: hp8591e
   TCPIP::localhost:2222::INSTR:
-    device: device 2
+    device: hp8591e
   GPIB::9::INSTR:
-    device: device 2
+    device: hp8591e
   ASRL3::INSTR:
-    device: device 3
+    device: yaesu
   USB::0x1111::0x2222::0x3692::INSTR:
-    device: device 3
+    device: yaesu
   TCPIP::localhost:3333::INSTR:
-    device: device 3
+    device: yaesu
   GPIB::10::INSTR:
-    device: device 3
+    device: yaesu
   ASRL4::INSTR:
-    device: device 4
+    device: esmb
   USB::0x1111::0x2222::0x4444::INSTR:
-    device: device 4
+    device: esmb
   TCPIP::localhost:4444::INSTR:
-    device: device 4
+    device: esmb
   GPIB::4::INSTR:
-    device: device 4
+    device: esmb
   USB::0x1111::0x2222::0x4445::RAW:
-    device: device 1
+    device: ek895
