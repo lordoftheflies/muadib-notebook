@@ -44,6 +44,8 @@ class BaseConfiguration(Configuration):
         'django.contrib.sites',
         'django_extensions',
 
+        'corsheaders',
+
         'rest_framework',
         'rest_framework.authtoken',
         'allauth',
@@ -273,7 +275,7 @@ class BaseConfiguration(Configuration):
     SOCKETIO_HOST = ''
     SOCKETIO_ASYNC_MODE = 'gevent'
 
-    VISA_LIBRARY = 'instrumentation.yaml@sim'
+    VISA_LIBRARY = '%s@sim' % os.path.join(BASE_DIR, 'instrumentation.yaml')
 
 
 class DevelopmentConfiguration(BaseConfiguration):

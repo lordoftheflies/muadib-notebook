@@ -229,3 +229,5 @@ class EquipmentModel(models.Model):
             task_queues=originals
         )
         return queue
+
+

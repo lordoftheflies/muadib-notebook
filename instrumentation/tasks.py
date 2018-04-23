@@ -5,6 +5,7 @@ import celery
 from celery import shared_task
 from celery.utils.log import get_task_logger
 
+from instrumentation.drivers import dm
 from instrumentation.models import EquipmentModel
 from muadib import sio
 
@@ -23,6 +24,7 @@ class ProcessTask(celery.Task):
 
 
 class EquipmentTask(celery.Task):
+
 
     def on_success(self, retval, task_id, args, kwargs):
         super().on_success(retval, task_id, args, kwargs)
@@ -44,9 +46,9 @@ class EquipmentTask(celery.Task):
         ))
 
 @shared_task(base=EquipmentTask)
-def ping(equipment_id):
-    return EquipmentModel.objects.get(id=equipment_id)
-
+def update(slug, **kwargs):
+    device = dm.device(dn=slug)
+    return device.query(**kwargs)
 
 @shared_task
 def configure(equipment_id, **kwargs):

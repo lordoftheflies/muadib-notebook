@@ -24,3 +24,4 @@ class MethodOverrideMiddleware(object):
         if METHOD_OVERRIDE_HEADER not in request.META:
             return
         request.method = request.META[METHOD_OVERRIDE_HEADER]
+

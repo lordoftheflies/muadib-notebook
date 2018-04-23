@@ -3,17 +3,17 @@ import logging
 import os
 import visa
 from django.conf import settings
+from kombu import Queue
 
 from instrumentation.models import EquipmentModel
+from muadib import sio
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'muadib.settings')
 os.environ.setdefault('DJANGO_CONFIGURATION', 'DevelopmentConfiguration')
 
 import configurations
 
-
 configurations.setup()
-
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +29,15 @@ class Driver(object):
     def close(self):
         raise NotImplementedError('')
 
+    def query(self, *args) -> str:
+        raise NotImplementedError('')
+
+    def read(self) -> str:
+        raise NotImplementedError('')
+
+    def write(self, *args) -> None:
+        raise NotImplementedError('')
+
 
 class DriverManager(object):
 
@@ -38,17 +47,25 @@ class DriverManager(object):
     def resources(self):
         return list(self._resource_manager.list_resources())
 
-    def resource_factory(self):
+    def resource_factory(self, address):
+        raise NotImplementedError('')
+
+    def driver_factory(self, resource):
+        raise NotImplementedError('')
+
+    def resolve_address(self, equipment_entity: EquipmentModel) -> str:
         raise NotImplementedError('')
 
     def resource_manager_factory(self):
         raise NotImplementedError('')
 
     def attach(self, equipment_entity: EquipmentModel):
-        raise NotImplementedError('')
+        return self.driver_factory(
+            resource=self.resource_factory(address=self.resolve_address(equipment_entity=equipment_entity)))
 
     def detach(self, driver: Driver):
         driver.close()
+
 
 class VisaDriver(Driver):
 
@@ -58,13 +75,13 @@ class VisaDriver(Driver):
     def close(self):
         self._resource.close()
 
-    def query(self, *args):
+    def query(self, *args) -> str:
         self._resource.query(''.join(args))
 
-    def read(self):
+    def read(self) -> str:
         return self._resource.read()
 
-    def write(self, *args):
+    def write(self, *args) -> None:
         self._resource.write(''.join(args))
 
 
@@ -74,18 +91,73 @@ class VisaDriverManager(DriverManager):
         return visa.ResourceManager(visa_library=settings.VISA_LIBRARY)
 
     def resource_factory(self, address):
-        self._resource_manager.open_resource(resource_name=address)
+        return self._resource_manager.open_resource(resource_name=address)
+
+    def resolve_address(self, equipment_entity: EquipmentModel) -> str:
+        return equipment_entity.address
+
+    def driver_factory(self, resource):
+        return VisaDriver(resource=resource)
 
 
-class DeviceManager(object):
+class Device(object):
 
+    def __init__(self, driver: Driver, equipment: EquipmentModel, queue: Queue):
+        self._driver = driver
+        self._equipment = equipment
+        self._queue = queue
+
+    def initialize(self):
+        sio.emit('state', dict(
+            state='initialized',
+
+        ))
+
+    def read(self, **kwargs):
+        response_context = dict()
+        for key in kwargs.keys():
+            response_context[key] = str(self._driver.read())
+        return response_context
+
+    def write(self, **kwargs):
+        for key in kwargs.keys():
+            kwargs[key] = self._driver.write(str(kwargs[key]))
+
+    def query(self, **kwargs):
+        response_context = dict()
+        for key in kwargs.keys():
+            response_context[key] = self._driver.query(str(kwargs[key]))
+        return response_context
+
+
+
+class DeviceManager():
     QUEUES = {}
+    DRIVER_MANAGER = VisaDriverManager()
 
-    def setup(self):
+    def __init__(self) -> None:
+        super().__init__()
+        self._devices = dict()
+
+
+
+    def run(self):
         # Attach all equipment
-        for equipment in EquipmentModel.objects.all():
-            self.QUEUES[equipment.distinguished_name] = equipment.attache_queue()
-            logger.info('Setup queue for equipment[%s]' % equipment)
+        for equipment_entity in EquipmentModel.objects.all():
+            logger.warning('Initialize equipment[%s] ...' % equipment_entity.distinguished_name)
+            queue = equipment_entity.attache_queue()
+            logger.info('Queue for equipment[%s] opened successfully' % equipment_entity)
+            driver = self.DRIVER_MANAGER.attach(equipment_entity=equipment_entity)
+            logger.info('Resource for equipment[%s] attached successfully' % equipment_entity)
+            device = Device(
+                driver=driver,
+                queue=queue,
+                equipment=equipment_entity
+            )
+            self._devices[equipment_entity.distinguished_name] = device
 
-    def status(self, dn):
-       pass
+    def device(self, dn) -> Device:
+        return self._devices[dn]
+
+
+dm = DeviceManager()

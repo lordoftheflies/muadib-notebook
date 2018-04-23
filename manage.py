@@ -20,5 +20,3 @@ if __name__ == "__main__":
             "forget to activate a virtual environment?"
         ) from exc
     execute_from_command_line(sys.argv)
-    PORT = 100
-    print('Listening on port %s and on port 843 (flash policy server)' % PORT)
