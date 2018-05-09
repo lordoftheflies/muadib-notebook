@@ -273,7 +273,9 @@ class BaseConfiguration(Configuration):
 
     SOCKETIO_PORT = 9001
     SOCKETIO_HOST = ''
-    SOCKETIO_ASYNC_MODE = 'gevent'
+    # SOCKETIO_ASYNC_MODE = 'gevent'
+    # SOCKETIO_ASYNC_MODE = 'gevent_uwsgi'
+    SOCKETIO_ASYNC_MODE = 'threading'
 
     VISA_LIBRARY = '%s@sim' % os.path.join(BASE_DIR, 'instrumentation.yaml')
 
