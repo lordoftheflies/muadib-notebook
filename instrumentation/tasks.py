@@ -6,8 +6,7 @@ from celery import shared_task
 from celery.utils.log import get_task_logger
 
 from instrumentation.drivers import dm
-from instrumentation.models import EquipmentModel
-from muadib import sio
+from presentation.views import sio
 
 logger = get_task_logger(__name__)
 
@@ -24,7 +23,6 @@ class ProcessTask(celery.Task):
 
 
 class EquipmentTask(celery.Task):
-
 
     def on_success(self, retval, task_id, args, kwargs):
         super().on_success(retval, task_id, args, kwargs)
@@ -45,10 +43,12 @@ class EquipmentTask(celery.Task):
             kwargs=kwargs
         ))
 
+
 @shared_task(base=EquipmentTask)
 def update(slug, **kwargs):
     device = dm.device(dn=slug)
     return device.query(**kwargs)
+
 
 @shared_task
 def configure(equipment_id, **kwargs):
@@ -67,3 +67,21 @@ def execute(*args, **kwargs):
     print('-----------------------')
     print('Positional: %s' % args)
     print('Key-values: %s' % kwargs)
+
+
+@shared_task
+def terminal_input(*args, **kwargs):
+    print('-----------------------')
+    print('Positional: %s' % args)
+    print('Key-values: %s' % kwargs)
+
+    return dict(result='ok')
+
+
+@shared_task
+def terminal_output(*args, **kwargs):
+    print('-----------------------')
+    print('Positional: %s' % args)
+    print('Key-values: %s' % kwargs)
+
+    return dict(result='ok')

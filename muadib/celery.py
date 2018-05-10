@@ -2,9 +2,12 @@ from __future__ import absolute_import, unicode_literals
 
 import os
 
+import eventlet
 from celery import Celery
 
 # set the default Django settings module for the 'celery' program.
+from celery.signals import celeryd_init
+
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'muadib.settings')
 os.environ.setdefault('DJANGO_CONFIGURATION', 'DevelopmentConfiguration')
@@ -13,6 +16,9 @@ import configurations
 
 
 configurations.setup()
+
+from instrumentation.drivers import dm
+
 
 app = Celery('muadib')
 
@@ -39,7 +45,13 @@ app.conf.task_default_queue = 'default'
 #     }
 # }
 
-
+@celeryd_init.connect
+def configure_workers(sender=None, conf=None, **kwargs):
+    # if sender in ('worker1@example.com', 'worker2@example.com'):
+    #     conf.task_default_rate_limit = '10/m'
+    # if sender == 'worker3@example.com':
+    #     conf.worker_prefetch_multiplier = 0
+    dm.run()
 
 
 @app.task(bind=True)

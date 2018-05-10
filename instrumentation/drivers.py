@@ -5,15 +5,13 @@ import visa
 from django.conf import settings
 from kombu import Queue
 
-from instrumentation.models import EquipmentModel
-from muadib import sio
+# from instrumentation.models import EquipmentModel
+# from presentation.views import sio
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'muadib.settings')
-os.environ.setdefault('DJANGO_CONFIGURATION', 'DevelopmentConfiguration')
-
-import configurations
-
-configurations.setup()
+# os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'muadib.settings')
+# os.environ.setdefault('DJANGO_CONFIGURATION', 'DevelopmentConfiguration')
+# import configurations
+# configurations.setup()
 
 logger = logging.getLogger(__name__)
 
@@ -53,13 +51,13 @@ class DriverManager(object):
     def driver_factory(self, resource):
         raise NotImplementedError('')
 
-    def resolve_address(self, equipment_entity: EquipmentModel) -> str:
+    def resolve_address(self, equipment_entity) -> str:
         raise NotImplementedError('')
 
     def resource_manager_factory(self):
         raise NotImplementedError('')
 
-    def attach(self, equipment_entity: EquipmentModel):
+    def attach(self, equipment_entity):
         return self.driver_factory(
             resource=self.resource_factory(address=self.resolve_address(equipment_entity=equipment_entity)))
 
@@ -93,7 +91,7 @@ class VisaDriverManager(DriverManager):
     def resource_factory(self, address):
         return self._resource_manager.open_resource(resource_name=address)
 
-    def resolve_address(self, equipment_entity: EquipmentModel) -> str:
+    def resolve_address(self, equipment_entity) -> str:
         return equipment_entity.address
 
     def driver_factory(self, resource):
@@ -102,16 +100,18 @@ class VisaDriverManager(DriverManager):
 
 class Device(object):
 
-    def __init__(self, driver: Driver, equipment: EquipmentModel, queue: Queue):
+    def __init__(self, driver: Driver, equipment, queue: Queue):
         self._driver = driver
         self._equipment = equipment
         self._queue = queue
 
     def initialize(self):
-        sio.emit('state', dict(
-            state='initialized',
-
-        ))
+        # from presentation.views import sio
+        # sio.emit('state', dict(
+        #     state='initialized',
+        #
+        # ))
+        pass
 
     def read(self, **kwargs):
         response_context = dict()
@@ -143,6 +143,7 @@ class DeviceManager():
 
     def run(self):
         # Attach all equipment
+        from instrumentation.models import EquipmentModel
         for equipment_entity in EquipmentModel.objects.all():
             logger.warning('Initialize equipment[%s] ...' % equipment_entity.distinguished_name)
             queue = equipment_entity.attache_queue()

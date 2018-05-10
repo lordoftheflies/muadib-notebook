@@ -6,10 +6,10 @@ from django.http import JsonResponse
 from django.shortcuts import render
 
 # Create your views here.
-# mgr = socketio.KombuManager('amqp://')
+mgr = socketio.KombuManager('amqp://')
 sio = socketio.Server(
     async_mode=settings.SOCKETIO_ASYNC_MODE,
-    # client_manager=mgr
+    client_manager=mgr
 )
 
 def live(request):

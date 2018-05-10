@@ -3,24 +3,24 @@ import logging
 import traceback
 
 from django.db import models
+from django.utils import timezone
 from django.utils.translation import gettext as _
-
 # Create your models here.
 from kombu import Queue
 
 logger = logging.getLogger(__name__)
 
+ATTRIBUTE_REPRESENTATION_TYPE_TEXT = 'text'
+ATTRIBUTE_REPRESENTATION_TYPE_NUMBER = 'number'
+ATTRIBUTE_REPRESENTATION_TYPE_DATE = 'date'
+ATTRIBUTE_REPRESENTATION_TYPES = [
+    (ATTRIBUTE_REPRESENTATION_TYPE_DATE, _('Date')),
+    (ATTRIBUTE_REPRESENTATION_TYPE_NUMBER, _('Number')),
+    (ATTRIBUTE_REPRESENTATION_TYPE_TEXT, _('Text')),
+]
+
 
 class DataRepresentationMixin(models.Model):
-    ATTRIBUTE_REPRESENTATION_TYPE_TEXT = 'text'
-    ATTRIBUTE_REPRESENTATION_TYPE_NUMBER = 'number'
-    ATTRIBUTE_REPRESENTATION_TYPE_DATE = 'date'
-    ATTRIBUTE_REPRESENTATION_TYPES = [
-        (ATTRIBUTE_REPRESENTATION_TYPE_DATE, _('Date')),
-        (ATTRIBUTE_REPRESENTATION_TYPE_NUMBER, _('Number')),
-        (ATTRIBUTE_REPRESENTATION_TYPE_TEXT, _('Text')),
-    ]
-
     representation_type = models.CharField(
         verbose_name=_('Representation type'),
         max_length=20,
@@ -200,6 +200,7 @@ class SchemaActionModel(ContentMixin):
         on_delete=models.CASCADE,
     )
 
+
 class SchemaAttributeModel(ContentMixin, DataRepresentationMixin, StronglyTypedMixin, ValidationMixin):
     class Meta:
         verbose_name = _('Attribute')
@@ -268,3 +269,25 @@ class EquipmentModel(ContentMixin):
             task_queues=originals
         )
         return queue
+
+
+class TerminalManager(models.Manager):
+
+    def __init__(self) -> None:
+        super().__init__()
+
+    def output(self, line_buffer_size=None) -> list:
+        return []
+
+
+class ConsoleCommandModel(models.Model):
+    TIMEOUT = 10
+
+    request_timestamp = models.DateTimeField(default=timezone.now)
+    response_timestamp = models.DateTimeField(default=None, null=True, blank=True)
+
+    equipment = models.ForeignKey(EquipmentModel, blank=True, null=True, default=None, on_delete=models.CASCADE)
+    request = models.CharField(max_length=1000, blank=True, null=True, default=None)
+    response = models.CharField(max_length=1000, blank=True, null=True, default=None)
+    error = models.CharField(max_length=1000, blank=True, null=True, default=None)
+
