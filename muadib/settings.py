@@ -69,15 +69,16 @@ class BaseConfiguration(Configuration):
         'djangobower',
 
         'presentation',
-        'instrumentation',
         'engine',
-        'simulator'
+        'simulator',
+        'instrumentation.apps.InstrumentationConfig',
 
     ]
 
     MIDDLEWARE = [
         'django.middleware.security.SecurityMiddleware',
         'django.contrib.sessions.middleware.SessionMiddleware',
+        'django.middleware.locale.LocaleMiddleware',
         'django.middleware.common.CommonMiddleware',
         'django.middleware.csrf.CsrfViewMiddleware',
         'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -264,6 +265,22 @@ class BaseConfiguration(Configuration):
             #     'level': 'ERROR',
             #     'propagate': False,
             # },
+            'instrumentation': {
+                'handlers': ['console'],
+                'level': 'DEBUG'
+            },
+            'instrumentation.serializers': {
+                'handlers': ['console'],
+                'level': 'DEBUG'
+            },
+            'instrumentation.views': {
+                'handlers': ['console'],
+                'level': 'DEBUG'
+            },
+            'instrumentation.tasks': {
+                'handlers': ['console'],
+                'level': 'DEBUG'
+            },
             'muadib': {
                 'handlers': ['console'],
                 'level': 'DEBUG'
@@ -273,7 +290,9 @@ class BaseConfiguration(Configuration):
 
     SOCKETIO_PORT = 9001
     SOCKETIO_HOST = ''
-    SOCKETIO_ASYNC_MODE = 'gevent'
+    # SOCKETIO_ASYNC_MODE = 'gevent'
+    # SOCKETIO_ASYNC_MODE = 'gevent_uwsgi'
+    SOCKETIO_ASYNC_MODE = 'threading'
 
     VISA_LIBRARY = '%s@sim' % os.path.join(BASE_DIR, 'instrumentation.yaml')
 

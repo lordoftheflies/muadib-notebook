@@ -3,14 +3,14 @@ import os
 import socketio
 from django.conf import settings
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'muadib.settings')
-os.environ.setdefault('DJANGO_CONFIGURATION', 'DevelopmentConfiguration')
+# os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'muadib.settings')
+# os.environ.setdefault('DJANGO_CONFIGURATION', 'DevelopmentConfiguration')
+#
+# import configurations
 
-import configurations
 
-
-configurations.setup()
-
+# configurations.setup()
+#
 logger = logging.getLogger(__name__)
 
 # set async_mode to 'threading', 'eventlet', 'gevent' or 'gevent_uwsgi' to
@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 basedir = settings.BASE_DIR
 # mgr = socketio.KombuManager('amqp://')
 # sio = socketio.Server(async_mode=settings.SOCKETIO_ASYNC_MODE, client_manager=mgr)
-thread = None
+# thread = None
 from muadib.wsgi import application
 # wrap WSGI application with socketio's middleware
 logger.warning('socket-io service initialized')
