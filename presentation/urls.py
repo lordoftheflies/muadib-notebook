@@ -12,7 +12,7 @@ urlpatterns = [
 
     url(r'^src/(?P<path>/.html)$', serve),
 
-    url(r'^$', TemplateView.as_view(template_name="presentation/spa.html"), name='home'),
+    url(r'^.*$', TemplateView.as_view(template_name="presentation/spa.html"), name='home'),
 
     url(r'^live/$', views.live, name='live'),
 

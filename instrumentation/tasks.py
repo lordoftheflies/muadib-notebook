@@ -84,4 +84,10 @@ def terminal_output(*args, **kwargs):
     print('Positional: %s' % args)
     print('Key-values: %s' % kwargs)
 
+    sio.emit('state', dict(result='ok'))
+
     return dict(result='ok')
+
+@shared_task
+def active_resources():
+    return dm.DRIVER_MANAGER.resources()

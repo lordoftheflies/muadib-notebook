@@ -10,5 +10,6 @@ router.register(r'terminal', views.ConsoleViewSet)
 
 # The API URLs are now determined automatically by the router.
 urlpatterns = [
-    url(r'^api/', include(router.urls))
+    url(r'^api/', include(router.urls)),
+    url(r'^api/resources/active/$', views.active_resources_view),
 ]

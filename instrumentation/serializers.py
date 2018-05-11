@@ -22,8 +22,6 @@ class ConsoleCommandSerializer(serializers.ModelSerializer):
     response_timestamp = serializers.DateTimeField(required=False, default=timezone.now())
     equipment = serializers.HyperlinkedRelatedField(required=False, many=False, view_name='equipment', read_only=True)
 
-
-
     class Meta:
         model = ConsoleCommandModel
         fields = [

@@ -30,9 +30,9 @@ urlpatterns = [
     # CUSTOM MODULES
     url(r'^instrumentation/', include('instrumentation.urls')),
     url(r'^engine/', include('engine.urls')),
-    url(r'', include('presentation.urls')),
+    url(r'^my-app/', include('presentation.urls')),
 
-    url(r'^$', TemplateView.as_view(template_name="presentation/spa.html"), name='home'),
+    # url(r'^$', TemplateView.as_view(template_name="presentation/spa.html"), name='home'),
 
     url(r'^signup/$', TemplateView.as_view(template_name="signup.html"), name='signup'),
     url(r'^email-verification/$', TemplateView.as_view(template_name="email_verification.html"),

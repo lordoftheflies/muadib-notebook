@@ -159,6 +159,7 @@ class BaseConfiguration(Configuration):
     )
 
     CELERY_RESULT_BACKEND = 'django-db'
+    CELERY_TASK_ALWAYS_EAGER = True
 
     # Internationalization
     # https://docs.djangoproject.com/en/2.0/topics/i18n/
