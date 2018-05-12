@@ -6,7 +6,6 @@ from celery import shared_task
 from celery.utils.log import get_task_logger
 
 from instrumentation.drivers import dm
-from presentation.views import sio
 
 logger = get_task_logger(__name__)
 
@@ -26,22 +25,11 @@ class EquipmentTask(celery.Task):
 
     def on_success(self, retval, task_id, args, kwargs):
         super().on_success(retval, task_id, args, kwargs)
-        sio.emit('state', dict(
-            task_id=task_id,
-            state=retval,
-            args=args,
-            kwargs=kwargs
-        ))
+
         print('{0!r} success: {1!r}'.format(task_id, retval))
 
     def on_failure(self, exc, task_id, args, kwargs, einfo):
         super().on_failure(exc, task_id, args, kwargs, einfo)
-        sio.emit('state', dict(
-            task_id=task_id,
-            state=str(exc),
-            args=args,
-            kwargs=kwargs
-        ))
 
 
 @shared_task(base=EquipmentTask)
@@ -84,9 +72,9 @@ def terminal_output(*args, **kwargs):
     print('Positional: %s' % args)
     print('Key-values: %s' % kwargs)
 
-    sio.emit('state', dict(result='ok'))
 
     return dict(result='ok')
+
 
 @shared_task
 def active_resources():

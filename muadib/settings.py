@@ -63,6 +63,8 @@ class BaseConfiguration(Configuration):
         'rest_auth',
         'rest_auth.registration',
 
+        'channels',
+
         'django_celery_results',
         'django_celery_beat',
 
@@ -107,6 +109,7 @@ class BaseConfiguration(Configuration):
     ]
 
     WSGI_APPLICATION = 'muadib.wsgi.application'
+    ASGI_APPLICATION = "muadib.routing.application"
 
     # Database
     # https://docs.djangoproject.com/en/2.0/ref/settings/#databases
@@ -130,6 +133,16 @@ class BaseConfiguration(Configuration):
             # 'rest_framework.authentication.SessionAuthentication',
             'rest_framework.authentication.TokenAuthentication',
         )
+    }
+
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "asgi_redis.RedisChannelLayer",
+            "CONFIG": {
+                "hosts": [os.environ.get('REDIS_URL', 'redis://localhost:6379')],
+            },
+            "ROUTING": "chat.routing.channel_routing",
+        },
     }
 
     # Password validation
