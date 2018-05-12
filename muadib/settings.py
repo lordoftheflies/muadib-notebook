@@ -231,6 +231,7 @@ class BaseConfiguration(Configuration):
         "chartjs#2.7.1",
         "chartjs-plugin-datalabels#0.2.0",
         "git://github.com/lordoftheflies/moment-js#^0.7.2",
+        "git://github.com/lordoftheflies/plutonium-socket#master",
         "git://github.com/lordoftheflies/paper-time-picker#master",
     )
 
