@@ -30,7 +30,9 @@ class BaseConfiguration(Configuration):
 
     SITE_ID = 1
 
-    ALLOWED_HOSTS = []
+    ALLOWED_HOSTS = [
+        '*'
+    ]
 
     # Application definition
 
@@ -140,8 +142,16 @@ class BaseConfiguration(Configuration):
             "BACKEND": "asgi_redis.RedisChannelLayer",
             "CONFIG": {
                 "hosts": [os.environ.get('REDIS_URL', 'redis://localhost:6379')],
+            }
+        },
+
+    }
+    CHANNEL_LAYERS = {
+        'default': {
+            'BACKEND': 'channels_redis.core.RedisChannelLayer',
+            'CONFIG': {
+                "hosts": [(os.environ.get('REDIS_HOST', 'localhost'), os.environ.get('REDIS_PORT', 6379))],
             },
-            "ROUTING": "chat.routing.channel_routing",
         },
     }
 

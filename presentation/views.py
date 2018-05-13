@@ -1,9 +1,6 @@
 import uuid
 
-import socketio
-from django.conf import settings
 from django.http import JsonResponse
-from django.shortcuts import render
 
 
 def live(request):

@@ -1,13 +1,8 @@
-import json
 import logging
-import os
 
-import socketio
-from django.shortcuts import render
 from django.utils import timezone
 from rest_framework import viewsets, permissions, renderers
 from rest_framework.decorators import action, api_view
-from rest_framework.generics import ListAPIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
@@ -28,6 +23,7 @@ def active_resources_view(request):
     except TimeoutError as e:
         logger.warning('Terminal timeout expired (%s)' % str(e))
         return Response([])
+
 
 class SchemaViewSet(viewsets.ModelViewSet):
     """
@@ -92,7 +88,7 @@ class ConsoleViewSet(viewsets.ModelViewSet):
         super().perform_create(serializer)
 
     def readline(self, command_line: ConsoleCommandModel = ConsoleCommandModel()):
-        from instrumentation.tasks import terminal_input, terminal_output
+        from instrumentation.tasks import terminal_input
 
         command_line.request_timestamp = timezone.now()
         try:
