@@ -1,24 +1,15 @@
 from __future__ import absolute_import, unicode_literals
-
 import os
-
-# import eventlet
 from celery import Celery
-
 # set the default Django settings module for the 'celery' program.
 from celery.signals import celeryd_init
 
-
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'muadib.settings')
 os.environ.setdefault('DJANGO_CONFIGURATION', 'DevelopmentConfiguration')
-
 import configurations
-
-
 configurations.setup()
 
 from instrumentation.drivers import dm
-
 
 app = Celery('muadib')
 
@@ -30,7 +21,6 @@ app.config_from_object('django.conf:settings', namespace='CELERY')
 
 # Load task modules from all registered Django app configs.
 app.autodiscover_tasks()
-
 app.conf.task_default_queue = 'default'
 
 # in the app bootstraping
@@ -57,3 +47,8 @@ def configure_workers(sender=None, conf=None, **kwargs):
 @app.task(bind=True)
 def debug_task(self):
     print('Request: {0!r}'.format(self.request))
+
+@app.task(bind=True)
+def ping_task(self):
+    print('Request: {0!r}'.format(self.request))
+    return True

@@ -1,6 +1,5 @@
 import logging
 
-from django.utils import timezone
 from rest_framework import viewsets, permissions, renderers
 from rest_framework.decorators import action, api_view
 from rest_framework.pagination import PageNumberPagination
@@ -9,6 +8,7 @@ from rest_framework.response import Response
 from instrumentation.models import EquipmentModel, SchemaModel, ConsoleCommandModel
 from instrumentation.serializers import EquipmentSerializer, SchemaSerializer, ConsoleCommandSerializer
 from instrumentation.tasks import active_resources
+from instrumentation.tasks import terminal_input
 
 logger = logging.getLogger(__name__)
 
@@ -84,23 +84,18 @@ class ConsoleViewSet(viewsets.ModelViewSet):
     # pagination_class = StandardResultsSetPagination
 
     def perform_create(self, serializer):
-        self.readline(command_line=serializer.validated_data)
-        super().perform_create(serializer)
 
-    def readline(self, command_line: ConsoleCommandModel = ConsoleCommandModel()):
-        from instrumentation.tasks import terminal_input
-
-        command_line.request_timestamp = timezone.now()
+        logger.info('Terminal[%s] readline: %s' % (
+            serializer.validated_data['resource'],
+            serializer.validated_data
+        ))
         try:
-            task_response = terminal_input.delay(command_line['request'])
-            logger.info('Terminal readline: %s' % command_line['request'])
-            command_line['response'] = task_response.get(timeout=ConsoleCommandModel.TIMEOUT)
+            response = terminal_input.delay(
+                resource_name=serializer.validated_data['resource'],
+                command=serializer.validated_data['request']
+            ).get()
+            logger.info('Output: %s' % response)
         except TimeoutError as e:
-            command_line['error'] = str(e)
-            logger.warning('Terminal timeout expired')
+            logger.warning('Terminal timeout expired', e)
         except BaseException as e:
-            command_line['error'] = str(e)
-            logger.error('Terminal error: %s' % str(e))
-        finally:
-            command_line.response_timestamp = timezone.now()
-            return command_line
+            logger.error('Unknown error', e)

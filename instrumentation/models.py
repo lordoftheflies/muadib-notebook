@@ -6,7 +6,7 @@ from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext as _
 # Create your models here.
-from kombu import Queue
+from kombu import Queue, Exchange
 
 logger = logging.getLogger(__name__)
 
@@ -263,7 +263,12 @@ class EquipmentModel(ContentMixin):
     def attache_queue(self) -> Queue:
         from muadib.celery import app
         originals = list(app.conf.task_queues) if app.conf.task_queues is not None else []
-        queue = Queue(self.distinguished_name, routing_key='%s.#' % self.distinguished_name)
+
+        exchange = Exchange('equipment', 'direct', durable=True)
+        queue = Queue(
+            name=self.distinguished_name,
+            exchange=exchange,
+            routing_key='%s.#' % self.distinguished_name)
         originals.append(queue)
         app.conf.update(
             task_queues=originals
@@ -287,7 +292,19 @@ class ConsoleCommandModel(models.Model):
     response_timestamp = models.DateTimeField(default=None, null=True, blank=True)
 
     equipment = models.ForeignKey(EquipmentModel, blank=True, null=True, default=None, on_delete=models.CASCADE)
+
     request = models.CharField(max_length=1000, blank=True, null=True, default=None)
     response = models.CharField(max_length=1000, blank=True, null=True, default=None)
     error = models.CharField(max_length=1000, blank=True, null=True, default=None)
 
+    @property
+    def resource(self):
+        if (self.equipment is not None):
+            return self.equipment.distinguished_name
+        else:
+            return None
+
+    @resource.setter
+    def resource(self, value):
+        self.equipment = EquipmentModel.objects.get(distinguished_name=value)
+        self.save()

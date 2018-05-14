@@ -18,9 +18,11 @@ class SchemaSerializer(serializers.ModelSerializer):
 
 
 class ConsoleCommandSerializer(serializers.ModelSerializer):
+
     request_timestamp = serializers.DateTimeField(required=False, default=timezone.now())
     response_timestamp = serializers.DateTimeField(required=False, default=timezone.now())
-    equipment = serializers.HyperlinkedRelatedField(required=False, many=False, view_name='equipment', read_only=True)
+
+    resource = serializers.CharField(required=True)
 
     class Meta:
         model = ConsoleCommandModel
@@ -28,8 +30,10 @@ class ConsoleCommandSerializer(serializers.ModelSerializer):
             'id',
             'request_timestamp',
             'response_timestamp',
+            'resource',
             'equipment',
             'request',
             'response',
             'error'
         ]
+

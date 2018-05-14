@@ -61,16 +61,19 @@ class Command(RunCommand):
 
     def create_resource(self, resource_key, resource):
         schema = SchemaModel.objects.get(distinguished_name=resource['device'])
-
-        equipment = EquipmentModel.objects.create(
-            distinguished_name=schema.distinguished_name,
-            display_name=schema.display_name,
-            description=schema.description,
-            schema=schema,
-            address=resource_key
-        )
-
-        return equipment
+        equipment = None
+        try:
+            equipment = EquipmentModel.objects.get(distinguished_name=schema.distinguished_name)
+        except BaseException as e:
+            equipment = EquipmentModel.objects.create(
+                distinguished_name=schema.distinguished_name,
+                display_name=schema.display_name,
+                description=schema.description,
+                schema=schema,
+                address=resource_key
+            )
+        finally:
+            return equipment
 
     def create_properties(self, properties, schema: SchemaModel):
         for property_key in properties:

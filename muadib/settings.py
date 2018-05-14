@@ -261,7 +261,7 @@ class BaseConfiguration(Configuration):
         'disable_existing_loggers': False,
         'formatters': {
             'verbose': {
-                'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+                'format': '%(levelname)s %(asctime)s [%(processName)s:%(threadName)s] %(module)s(%(lineno)d) %(message)s'
             },
             'simple': {
                 'format': '%(levelname)s %(message)s'
@@ -312,12 +312,6 @@ class BaseConfiguration(Configuration):
             }
         },
     }
-
-    SOCKETIO_PORT = 9001
-    SOCKETIO_HOST = ''
-    # SOCKETIO_ASYNC_MODE = 'gevent'
-    # SOCKETIO_ASYNC_MODE = 'gevent_uwsgi'
-    SOCKETIO_ASYNC_MODE = 'threading'
 
     VISA_LIBRARY = '%s@sim' % os.path.join(BASE_DIR, 'instrumentation.yaml')
 

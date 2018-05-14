@@ -1,4 +1,3 @@
-# Create your tasks here
 from __future__ import absolute_import, unicode_literals
 
 import celery
@@ -9,6 +8,7 @@ from instrumentation.drivers import dm
 
 logger = get_task_logger(__name__)
 
+# Create your tasks here
 
 class ProcessTask(celery.Task):
 
@@ -58,11 +58,17 @@ def execute(*args, **kwargs):
 
 
 @shared_task
-def terminal_input(*args, **kwargs):
-    print('-----------------------')
-    print('Positional: %s' % args)
-    print('Key-values: %s' % kwargs)
+def terminal_input(resource_name, command):
+    print('%s << %s' % (resource_name, command))
 
+    from channels.layers import get_channel_layer
+    channel_layer = get_channel_layer()
+    # from asgiref.sync import sync_to_async
+    from asgiref.sync import async_to_sync
+    async_to_sync(channel_layer.group_send)('terminal_' + resource_name, {
+        "type": "resource_terminal",
+        "message": command
+    })
     return dict(result='ok')
 
 
@@ -71,7 +77,6 @@ def terminal_output(*args, **kwargs):
     print('-----------------------')
     print('Positional: %s' % args)
     print('Key-values: %s' % kwargs)
-
 
     return dict(result='ok')
 

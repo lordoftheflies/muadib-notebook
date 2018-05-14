@@ -5,8 +5,6 @@ from django.core.serializers import serialize
 from django.core.serializers.json import DjangoJSONEncoder
 
 from instrumentation.models import SchemaModel
-from muadib import sio
-
 
 class Command(RunCommand):
     help = 'Display scheme of the station controller'
