@@ -1,5 +1,7 @@
 from unittest.mock import patch
 
+import pytest
+from channels.testing import HttpCommunicator, WebsocketCommunicator
 from django.core.management import call_command
 from django.test import TestCase
 
@@ -9,78 +11,104 @@ from rest_framework import status
 from rest_framework.reverse import reverse
 from rest_framework.test import APITestCase
 
+from instrumentation.consumers import TerminalConsumer
 from instrumentation.models import ConsoleCommandModel
-from instrumentation.tasks import terminal_input
+from instrumentation.tasks import terminal_input, terminal_task
+
+#
+# class CommandsTestCase(TestCase):
+#
+#     def test_schema_export(self):
+#         """
+#
+#         :return:
+#         """
+#
+#         args = [
+#             'export_test.yml'
+#         ]
+#         opts = {}
+#         call_command('schema_export', *args, **opts)
+#
+#     def test_schema_import(self):
+#         """
+#
+#         :return:
+#         """
+#
+#         args = [
+#             'import_test.yml'
+#         ]
+#         opts = {}
+#         call_command('schema_import', *args, **opts)
 
 
-class CommandsTestCase(TestCase):
+class PingEquipment(TestCase):
 
-    def test_schema_export(self):
-        """
-
-        :return:
-        """
-
-        args = [
-            'export_test.yml'
-        ]
-        opts = {}
-        call_command('schema_export', *args, **opts)
-
-    def test_schema_import(self):
-        """
-
-        :return:
-        """
-
-        args = [
-            'import_test.yml'
-        ]
-        opts = {}
-        call_command('schema_import', *args, **opts)
+    @patch('instrumentation.tasks.ping_task')  # < patching Product in module above
+    def test_success(self, a):
+        terminal_task("kacsa", 'kaka')
 
 
-class InstrumentationTaskTestCase(TestCase):
-
-    @patch('instrumentation.tasks.terminal_input')  # < patching Product in module above
-    def test_success(self, product_order):
-        product = ConsoleCommandModel.objects.create(
-            request='noop',
-        )
-
-        terminal_input("kacsa")
-        #
-        # send_order(product.pk, 3, Decimal(30.3))
-        # product_order.assert_called_with(3, Decimal(30.3))
-
-    # @patch('proj.tasks.Product.order')
-    # @patch('proj.tasks.send_order.retry')
-    # def test_failure(self, send_order_retry, product_order):
-    #     product = Product.objects.create(
-    #         name='Foo',
-    #     )
-    #
-    #     # Set a side effect on the patched methods
-    #     # so that they raise the errors we want.
-    #     send_order_retry.side_effect = Retry()
-    #     product_order.side_effect = OperationalError()
-    #
-    #     with raises(Retry):
-    #         send_order(product.pk, 3, Decimal(30.6))
-
-
-class TerminalApiTests(APITestCase):
-
-    def test_readline(self):
-        """
-        Ensure we can create a new account object.
-        """
-        url = '/instrumentation/api/terminal/'
-        data = {
-            'request_timestamp': timezone.now(),
-            'request': 'DabApps',
-        }
-        response = self.client.post(url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(ConsoleCommandModel.objects.count(), 1)
-        self.assertEqual(ConsoleCommandModel.objects.get().request, 'DabApps')
+# class InstrumentationTaskTestCase(TestCase):
+#
+#     @patch('instrumentation.tasks.terminal_input')  # < patching Product in module above
+#     def test_success(self, product_order):
+#         product = ConsoleCommandModel.objects.create(
+#             request='noop',
+#         )
+#
+#         terminal_input("kacsa", 'kaka')
+#         #
+#         # send_order(product.pk, 3, Decimal(30.3))
+#         # product_order.assert_called_with(3, Decimal(30.3))
+#
+#     # @patch('proj.tasks.Product.order')
+#     # @patch('proj.tasks.send_order.retry')
+#     # def test_failure(self, send_order_retry, product_order):
+#     #     product = Product.objects.create(
+#     #         name='Foo',
+#     #     )
+#     #
+#     #     # Set a side effect on the patched methods
+#     #     # so that they raise the errors we want.
+#     #     send_order_retry.side_effect = Retry()
+#     #     product_order.side_effect = OperationalError()
+#     #
+#     #     with raises(Retry):
+#     #         send_order(product.pk, 3, Decimal(30.6))
+#
+#
+# # class TerminalApiTests(APITestCase):
+# #
+# #     def test_readline(self):
+# #         """
+# #         Ensure we can create a new account object.
+# #         """
+# #         url = '/instrumentation/api/terminal/'
+# #         data = {
+# #             'request_timestamp': timezone.now(),
+# #             'request': 'DabApps',
+# #         }
+# #         response = self.client.post(url, data, format='json')
+# #         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+# #         self.assertEqual(ConsoleCommandModel.objects.count(), 1)
+# #         self.assertEqual(ConsoleCommandModel.objects.get().request, 'DabApps')
+#
+# @pytest.mark.asyncio
+# async def test_terminal_consumer():
+#     communicator = WebsocketCommunicator(TerminalConsumer, "/terminal/ek895/")
+#
+#     given = dict(
+#         request='PM ON',
+#         response='ok'
+#     )
+#
+#     connected, subprotocol = await communicator.connect()
+#     assert connected
+#     # Test sending text
+#     await communicator.send_json_to(content=given)
+#     response = await communicator.receive_json_from()
+#     assert response == "hello"
+#     # Close
+#     await communicator.disconnect()

@@ -12,4 +12,5 @@ router.register(r'terminal', views.ConsoleViewSet)
 urlpatterns = [
     url(r'^api/', include(router.urls)),
     url(r'^api/resources/active/$', views.active_resources_view),
+    url(r'^api/ping/(?P<resource_name>[a-z0-9]+)/$', views.ping_view),
 ]

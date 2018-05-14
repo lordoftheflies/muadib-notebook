@@ -67,5 +67,8 @@ components/
 
 .idea/
 
-# Bower componens
+# Bower components
 **/bower_components/
+
+# Node modules
+**/node_modules/

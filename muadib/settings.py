@@ -182,7 +182,7 @@ class BaseConfiguration(Configuration):
     )
 
     CELERY_RESULT_BACKEND = 'django-db'
-    CELERY_TASK_ALWAYS_EAGER = True
+    CELERY_TASK_ALWAYS_EAGER = False
 
     # Internationalization
     # https://docs.djangoproject.com/en/2.0/topics/i18n/
@@ -258,7 +258,7 @@ class BaseConfiguration(Configuration):
 
     LOGGING = {
         'version': 1,
-        'disable_existing_loggers': False,
+        'disable_existing_loggers': True,
         'formatters': {
             'verbose': {
                 'format': '%(levelname)s %(asctime)s [%(processName)s:%(threadName)s] %(module)s(%(lineno)d) %(message)s'
@@ -290,26 +290,26 @@ class BaseConfiguration(Configuration):
             #     'level': 'ERROR',
             #     'propagate': False,
             # },
-            'instrumentation': {
-                'handlers': ['console'],
-                'level': 'DEBUG'
-            },
+            # 'instrumentation': {
+            #     'handlers': ['console'],
+            #     'level': 'DEBUG'
+            # },
             'instrumentation.serializers': {
                 'handlers': ['console'],
                 'level': 'DEBUG'
             },
             'instrumentation.views': {
-                'handlers': ['console'],
-                'level': 'DEBUG'
+                # 'handlers': ['console'],
+                # 'level': 'DEBUG'
             },
             'instrumentation.tasks': {
-                'handlers': ['console'],
+                # 'handlers': ['console'],
                 'level': 'DEBUG'
             },
-            'muadib': {
-                'handlers': ['console'],
-                'level': 'DEBUG'
-            }
+            # 'muadib': {
+            #     'handlers': ['console'],
+            #     'level': 'DEBUG'
+            # }
         },
     }
 

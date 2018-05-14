@@ -7,7 +7,7 @@ from rest_framework.response import Response
 
 from instrumentation.models import EquipmentModel, SchemaModel, ConsoleCommandModel
 from instrumentation.serializers import EquipmentSerializer, SchemaSerializer, ConsoleCommandSerializer
-from instrumentation.tasks import active_resources
+from instrumentation.tasks import active_resources, terminal_task
 from instrumentation.tasks import terminal_input
 
 logger = logging.getLogger(__name__)
@@ -19,6 +19,21 @@ logger = logging.getLogger(__name__)
 def active_resources_view(request):
     try:
         response = active_resources.delay()
+        return Response(response.get(ConsoleCommandModel.TIMEOUT))
+    except TimeoutError as e:
+        logger.warning('Terminal timeout expired (%s)' % str(e))
+        return Response([])
+
+
+@api_view(['GET'])
+def ping_view(request, resource_name):
+    try:
+        response = terminal_task.apply_async(
+            queue=resource_name,
+            exchange='equipment',
+            # routing_key='%s' % resource_name,
+            args=['a', 'b']
+        )
         return Response(response.get(ConsoleCommandModel.TIMEOUT))
     except TimeoutError as e:
         logger.warning('Terminal timeout expired (%s)' % str(e))
@@ -90,9 +105,11 @@ class ConsoleViewSet(viewsets.ModelViewSet):
             serializer.validated_data
         ))
         try:
-            response = terminal_input.delay(
-                resource_name=serializer.validated_data['resource'],
-                command=serializer.validated_data['request']
+            response = terminal_task.apply_async(
+                queue=serializer.validated_data['resource'],
+                exchange='equipment',
+                # routing_key='%s' % resource_name,
+                args=[serializer.validated_data['request']]
             ).get()
             logger.info('Output: %s' % response)
         except TimeoutError as e:

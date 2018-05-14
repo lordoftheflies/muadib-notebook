@@ -28,7 +28,7 @@ class TerminalConsumer(AsyncJsonWebsocketConsumer):
         self.resource_group_name = 'terminal_%s' % self.resource_name
 
         print('---------------------------------------------------------------')
-
+        logger.info('"%s" connected to websocket-bridge "%s".' % (self.resource_name, self.resource_group_name))
 
         # Join room group
         await self.channel_layer.group_add(
@@ -38,7 +38,7 @@ class TerminalConsumer(AsyncJsonWebsocketConsumer):
 
         await self.accept()
 
-        logger.info('"%s" connected to websocket-bridge "%s".' % (self.resource_name, self.resource_group_name))
+
 
     async def disconnect(self, close_code):
         # Leave room group

@@ -45,6 +45,10 @@ class DriverManager(object):
     def resources(self):
         return list(self._resource_manager.list_resources())
 
+    @property
+    def resource_manager(self):
+        return self._resource_manager
+
     def resource_factory(self, address):
         raise NotImplementedError('')
 
@@ -105,6 +109,10 @@ class Device(object):
         self._equipment = equipment
         self._queue = queue
 
+    @property
+    def resource(self):
+        return self._driver.resource
+
     def initialize(self):
         # from presentation.views import sio
         # sio.emit('state', dict(
@@ -140,6 +148,9 @@ class DeviceManager():
         self._devices = dict()
 
 
+    @property
+    def resource_manager(self):
+        return self.DRIVER_MANAGER.resource_manager
 
     def run(self):
         # Attach all equipment
