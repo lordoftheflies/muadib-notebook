@@ -229,6 +229,15 @@ class SchemaAttributeModel(ContentMixin, DataRepresentationMixin, StronglyTypedM
         blank=True,
         on_delete=models.CASCADE
     )
+    query_operation = models.ForeignKey(
+        verbose_name=_('Query operation'),
+        to=OperationModel,
+        related_name='queries',
+        default=None,
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE
+    )
 
 
 class EquipmentModel(ContentMixin):
@@ -259,6 +268,9 @@ class EquipmentModel(ContentMixin):
     @configuration.setter
     def configuration(self, value):
         self._configuration = json.dumps(value)
+
+    def attribute(self, name):
+        return SchemaAttributeModel.objects.filter(distinguished_name=name, schema=self.schema).first()
 
     def attache_queue(self) -> Queue:
         from muadib.celery import app
@@ -308,3 +320,80 @@ class ConsoleCommandModel(models.Model):
     def resource(self, value):
         self.equipment = EquipmentModel.objects.get(distinguished_name=value)
         self.save()
+
+
+# ------------------------------------
+
+class Content(models.Model):
+    name = models.CharField(max_length=100)
+    display_name = models.CharField(max_length=100, null=True, blank=True, default=None)
+    description = models.CharField(max_length=1000, null=True, blank=True, default=None)
+
+    class Meta:
+        abstract = True
+
+DATA_TYPE_TEXT = 'text'
+DATA_TYPE_NUMBER = 'number'
+DATA_TYPE_DATE = 'date'
+
+DATA_TYPES = [
+    (DATA_TYPE_DATE, _('Date')),
+    (DATA_TYPE_NUMBER, _('Number')),
+    (DATA_TYPE_TEXT, _('Text')),
+]
+
+class Process(Content):
+    pass
+
+    def begin(self):
+        execution = Execution.objects.create(
+            process=self
+        )
+        return execution
+
+
+
+  class Parameter(Content):
+    data_type = models.CharField(max_length=100, choices=DATA_TYPES, default=DATA_TYPE_TEXT)
+    default_value = models.CharField(max_length=100, null=True, blank=True, default=None)
+
+
+class Execution(models.Model):
+    root_task_id = models.UUIDField(null=True, blank=True, default=None)
+    process = models.ForeignKey(
+        verbose_name=_('Process'),
+        to=Process,
+        on_delete=models.CASCADE
+    )
+
+    started = models.DateTimeField(default=timezone.now)
+    finished = models.DateTimeField(default=None, blank=True, null=True)
+
+    @property
+    def interval(self):
+        if self.started is not None and self.finished is not None:
+            return self.finished - self.started
+        else:
+            return 0
+
+    def ingest_data(self, **kwargs):
+        data_frame = DataFrame.objects.create(execution=self)
+        data_frame.raw = kwargs
+        data_frame.save()
+
+class DataFrame(models.Model):
+    execution = models.ForeignKey(
+        verbose_name=_('Execution'),
+        to=Execution,
+        on_delete=models.CASCADE
+    )
+
+    _raw = models.TextField(max_length=100000, default=None, null=True, blank=True)
+
+    @property
+    def raw(self):
+        return json.loads(self._raw)
+
+    @raw.setter
+    def raw(self, value):
+        self._raw = json.dumps(value)
