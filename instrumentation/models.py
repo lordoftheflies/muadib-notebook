@@ -86,6 +86,10 @@ class Equipment(NamedEntity):
         exchange = Exchange('equipment', 'direct', durable=True)
         return [e.create_queue(exchange=exchange) for e in Equipment.objects.filter(active=True)]
 
+    @property
+    def properties(self):
+        return EquipmentProperty.objects.filter(equipment=self)
+
 
 class EquipmentProperty(Parameter):
     equipment = models.ForeignKey(
