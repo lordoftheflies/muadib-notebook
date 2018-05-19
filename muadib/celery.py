@@ -41,8 +41,8 @@ def configure_workers(sender=None, conf=None, **kwargs):
     #     conf.task_default_rate_limit = '10/m'
     # if sender == 'worker3@example.com':
     #     conf.worker_prefetch_multiplier = 0
-    dm.run()
-
+    # dm.run()
+    pass
 
 @app.task(bind=True)
 def debug_task(self):

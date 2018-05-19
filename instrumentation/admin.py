@@ -1,36 +1,40 @@
 from django.contrib import admin
-from instrumentation.models import EquipmentModel, SchemaModel, SchemaAttributeModel
+from instrumentation import models as instrumentation_model
 
 
 # Register your models here.
 
-class SchemaAttributeInline(admin.StackedInline):
-    model = SchemaAttributeModel
+class EquipmentPropertyInline(admin.StackedInline):
+    model = instrumentation_model.EquipmentProperty
     extra = 0
     fields = [
-        'distinguished_name',
+        'name',
         'display_name',
         'description',
-
-        'data_type',
-        'data_precision',
-        'representation_type',
-        'representation_precision',
-
-        'constrait_minimum',
-        'constrait_maximum',
-        'constrait_pattern',
-        'constrait_required'
+        'default_value',
+        'equipment'
     ]
 
 
-@admin.register(SchemaModel)
-class SchemaAdmin(admin.ModelAdmin):
-    list_display = ['id', 'distinguished_name', 'display_name', 'description']
-    inlines = [SchemaAttributeInline]
+class ProcessParameterInline(admin.StackedInline):
+    model = instrumentation_model.ProcessParameter
+    extra = 0
+    fields = [
+        'name',
+        'display_name',
+        'description',
+        'default_value',
+        'process'
+    ]
 
 
-@admin.register(EquipmentModel)
+@admin.register(instrumentation_model.Equipment)
 class EquipmentAdmin(admin.ModelAdmin):
-    list_display = ['id', 'distinguished_name', 'display_name', 'description']
-    pass
+    list_display = ['id', 'name', 'display_name', 'description', 'active']
+    inlines = [EquipmentPropertyInline]
+
+
+@admin.register(instrumentation_model.Process)
+class ProcessAdmin(admin.ModelAdmin):
+    list_display = ['id', 'name', 'display_name', 'description']
+    inlines = [ProcessParameterInline]
