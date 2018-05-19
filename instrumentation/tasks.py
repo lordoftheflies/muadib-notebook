@@ -15,7 +15,7 @@ from django.db import transaction
 from django.utils import timezone
 
 from instrumentation.drivers import dm, DeviceManager
-from instrumentation.models import ConsoleCommandModel, EquipmentModel, Execution
+from instrumentation.models import ConsoleCommandModel, EquipmentModel, Execution, Process
 from instrumentation.serializers import ConsoleCommandSerializer
 
 logger = get_task_logger(__name__)
@@ -501,12 +501,20 @@ def active_resources():
 
 class ProcessTask(celery.Task, ConfigurableMixin):
 
+
+
+    def __init__(self) -> None:
+        super().__init__()
+        logger.info('Initialize process task')
+
     def __call__(self, *args, **kwargs):
+        logger.info('Call process task')
         return super().__call__(*args, **kwargs)
 
     def on_success(self, retval, task_id, args, kwargs):
         super().on_success(retval, task_id, args, kwargs)
 
+        logger.info('Process task success')
         logger.debug(retval)
         logger.debug(task_id)
         logger.debug(args)
@@ -514,9 +522,12 @@ class ProcessTask(celery.Task, ConfigurableMixin):
 
         self.persist_frame(**retval)
 
-
     def on_failure(self, exc, task_id, args, kwargs, einfo):
+
         super().on_failure(exc, task_id, args, kwargs, einfo)
+
+        logger.info('Process task failure')
+
         logger.debug(exc)
         logger.debug(task_id)
         logger.debug(args)
@@ -536,9 +547,12 @@ class ProcessTask(celery.Task, ConfigurableMixin):
     def persist_log(self, **kwargs):
         pass
 
+    def create_instance(self, **kwargs) -> Execution:
+        self._execution = Process.objects.begin(**kwargs)
+        return self._execution
+
 @shared_task(bind=True, base_task=ProcessTask)
 def long_running_task(self, start, stop, step):
-
     self.override_configuration(
         frequency_f=100,
         span_f=4000,
@@ -554,6 +568,7 @@ def long_running_task(self, start, stop, step):
     time.sleep(1)
     return 'hello world: %i' % (a + b)
 
+
 def on_progress(body):
     """
     {'task_id': '5660d3a3-92b8-40df-8ccc-33a5d1d680d7',
@@ -565,3 +580,10 @@ def on_progress(body):
     :return:
     """
     print(body)
+
+
+@shared_task(bind=True, base_task=ProcessTask)
+def run_process(self, *args, **kwargs):
+    self.create_instance(**kwargs)
+
+

@@ -332,6 +332,7 @@ class Content(models.Model):
     class Meta:
         abstract = True
 
+
 DATA_TYPE_TEXT = 'text'
 DATA_TYPE_NUMBER = 'number'
 DATA_TYPE_DATE = 'date'
@@ -342,19 +343,36 @@ DATA_TYPES = [
     (DATA_TYPE_TEXT, _('Text')),
 ]
 
+
 class Process(Content):
+    """
+    Folyamat entitás.
+    """
     pass
 
-    def begin(self):
-        execution = Execution.objects.create(
-            process=self
-        )
+    @property
+    def input_parameters(self):
+        return ProcessParameter.objects.filter(process=self)
+
+    def begin(self, **kwargs):
+        execution = Execution.objects.create(process=self)
+        configuration = {p.name: p.default_value if p.name not in kwargs.keys() else kwargs[p.name] for p in self.input_parameters}
+        execution.configuration = configuration
+        execution.save()
+        logger.warning('Process[%s] create new execution[%s]' % (self.name, execution.id))
         return execution
 
 
-
-  class Parameter(Content):
+class Parameter(Content):
     data_type = models.CharField(max_length=100, choices=DATA_TYPES, default=DATA_TYPE_TEXT)
+
+
+class ProcessParameter(Parameter):
+    process = models.ForeignKey(
+        verbose_name=_('Process'),
+        to=Process,
+        on_delete=models.CASCADE
+    )
     default_value = models.CharField(max_length=100, null=True, blank=True, default=None)
 
 
@@ -368,6 +386,15 @@ class Execution(models.Model):
 
     started = models.DateTimeField(default=timezone.now)
     finished = models.DateTimeField(default=None, blank=True, null=True)
+    configuration_data = models.CharField(max_length=10000, default=None, blank=True, null=True)
+
+    @property
+    def configuration(self):
+        return json.dumps(self.configuration_data)
+
+    @configuration.setter
+    def configuration(self, value):
+        self.configuration_data = json.dumps(value)
 
     @property
     def interval(self):
@@ -378,8 +405,9 @@ class Execution(models.Model):
 
     def ingest_data(self, **kwargs):
         data_frame = DataFrame.objects.create(execution=self)
-        data_frame.raw = kwargs
+        data_frame.raw_data = kwargs
         data_frame.save()
+
 
 class DataFrame(models.Model):
     execution = models.ForeignKey(
@@ -388,12 +416,39 @@ class DataFrame(models.Model):
         on_delete=models.CASCADE
     )
 
-    _raw = models.TextField(max_length=100000, default=None, null=True, blank=True)
+    data = models.TextField(max_length=100000, default=None, null=True, blank=True)
+    additional_data = models.TextField(max_length=10000, default=None, null=True, blank=True)
+    indicators_data = models.TextField(max_length=10000, default=None, null=True, blank=True)
+    markers_data = models.TextField(max_length=10000, default=None, null=True, blank=True)
 
     @property
-    def raw(self):
-        return json.loads(self._raw)
+    def raw_data(self):
+        return json.loads(self.data)
 
-    @raw.setter
-    def raw(self, value):
-        self._raw = json.dumps(value)
+    @raw_data.setter
+    def raw_data(self, value):
+        self.data = json.dumps(value)
+
+    @property
+    def additional(self):
+        return json.loads(self.additional_data)
+
+    @additional.setter
+    def additional(self, value):
+        self.additional_data = json.dumps(value)
+
+    @property
+    def indicators(self):
+        return json.loads(self.indicators_data)
+
+    @indicators.setter
+    def indicators(self, value):
+        self.indicators_data = json.dumps(value)
+
+    @property
+    def markers(self):
+        return self.markers
+
+    @markers.setter
+    def markers(self, value):
+        self.markers_data = json.dumps(value)
