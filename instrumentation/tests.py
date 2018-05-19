@@ -1,14 +1,30 @@
 from unittest.mock import patch
 
 from datetime import datetime
+
+from django.core.management import call_command
 from django.test import TestCase
 from django.utils import timezone
 
 from instrumentation import models as instrumentation_models
 
 
-
 # Create your tests here.
+
+class CommandsTestCase(TestCase):
+
+    def test_schema_import(self):
+        """
+
+        :return:
+        """
+
+        args = [
+            'import_test.yml'
+        ]
+        opts = {}
+        call_command('schema_import', *args, **opts)
+
 
 class EquipmentTestCase(TestCase):
     def setUp(self):
@@ -29,6 +45,7 @@ class EquipmentTestCase(TestCase):
         self.assertEqual(test_simple.friendly_name, 'test_simple_eq')
         self.assertEqual(test_single.friendly_name, 'Simple test equipment with friendly name')
 
+
 class ProcessTestCase(TestCase):
     def setUp(self):
         instrumentation_models.Process.objects.create(
@@ -48,6 +65,7 @@ class ProcessTestCase(TestCase):
         self.assertEqual(test_simple.friendly_name, 'test_simple')
         self.assertEqual(test_single_equipment.friendly_name, 'Measure with single equipment')
 
+
 class ExecuteProcessTestCase(TestCase):
     def setUp(self):
         instrumentation_models.Equipment.objects.create(
@@ -58,8 +76,6 @@ class ExecuteProcessTestCase(TestCase):
             name="test_simple_proc",
             description="Simple test process without parameters"
         )
-
-
 
     def test_execute(self):
         """Test execute process"""

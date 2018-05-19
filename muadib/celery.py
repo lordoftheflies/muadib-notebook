@@ -1,5 +1,9 @@
 from __future__ import absolute_import, unicode_literals
+
+import logging
 import os
+import traceback
+
 from celery import Celery
 # set the default Django settings module for the 'celery' program.
 from celery.signals import celeryd_init
@@ -7,9 +11,10 @@ from celery.signals import celeryd_init
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'muadib.settings')
 os.environ.setdefault('DJANGO_CONFIGURATION', 'DevelopmentConfiguration')
 import configurations
+
 configurations.setup()
 
-from instrumentation.drivers import dm
+from instrumentation import models as instrumentation_models
 
 app = Celery('muadib')
 
@@ -34,19 +39,26 @@ app.conf.task_default_queue = 'default'
 #         'queue': 'feeds'
 #     }
 # }
+from celery.utils.log import get_logger
+
+logger = get_logger(__name__)
+
 
 @celeryd_init.connect
 def configure_workers(sender=None, conf=None, **kwargs):
-    # if sender in ('worker1@example.com', 'worker2@example.com'):
-    #     conf.task_default_rate_limit = '10/m'
-    # if sender == 'worker3@example.com':
-    #     conf.worker_prefetch_multiplier = 0
-    # dm.run()
-    pass
+    try:
+        logger.info('Celery initialization ...')
+        active_equipments_queues = instrumentation_models.Equipment.generate_queues()
+        active_process_queues = instrumentation_models.Process.generate_queues()
+        app.conf.update(task_queues=active_equipments_queues + active_process_queues)
+    except:
+        traceback.print_exc()
+
 
 @app.task(bind=True)
 def debug_task(self):
     print('Request: {0!r}'.format(self.request))
+
 
 @app.task(bind=True)
 def ping_task(self):

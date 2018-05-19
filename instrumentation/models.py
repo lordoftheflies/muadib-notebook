@@ -78,6 +78,7 @@ class Equipment(NamedEntity):
             name=self.name,
             exchange=exchange,
             routing_key='%s.#' % self.name)
+        logger.info('Create queue %s:%s' % (exchange.name, queue.name))
         return queue
 
     @staticmethod
@@ -119,12 +120,14 @@ class Process(NamedEntity):
             name=self.name,
             exchange=exchange,
             routing_key='%s.#' % self.name)
+        logger.info('Create queue %s:%s' % (exchange.name, queue.name))
+
         return queue
 
     @staticmethod
     def generate_queues():
         exchange = Exchange('process', 'direct', durable=True)
-        return [p.create_queue(exchange=exchange) for p in Process.objects.filter(active=True)]
+        return [p.create_queue(exchange=exchange) for p in Process.objects.all()]
 
 
 class ProcessParameter(Parameter):

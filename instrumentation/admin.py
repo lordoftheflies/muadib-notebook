@@ -4,25 +4,27 @@ from instrumentation import models as instrumentation_model
 
 # Register your models here.
 
-class EquipmentPropertyInline(admin.StackedInline):
+class EquipmentPropertyInline(admin.TabularInline):
     model = instrumentation_model.EquipmentProperty
     extra = 0
     fields = [
         'name',
         'display_name',
         'description',
+        'data_type',
         'default_value',
         'equipment'
     ]
 
 
-class ProcessParameterInline(admin.StackedInline):
+class ProcessParameterInline(admin.TabularInline):
     model = instrumentation_model.ProcessParameter
     extra = 0
     fields = [
         'name',
         'display_name',
         'description',
+        'data_type',
         'default_value',
         'process'
     ]
