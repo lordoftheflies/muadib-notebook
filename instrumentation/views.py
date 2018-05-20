@@ -51,6 +51,21 @@ class EquipmentViewSet(viewsets.ModelViewSet):
     serializer_class = instrumentation_serializers.EquipmentSerializer
     permission_classes = [permissions.AllowAny]
 
+    @action(
+        detail=True,
+        url_path='properties',
+        url_name='properties',
+        renderer_classes=[
+            renderers.BrowsableAPIRenderer,
+            renderers.JSONRenderer,
+            renderers.StaticHTMLRenderer,
+            renderers.DocumentationRenderer
+        ]
+    )
+    def properties(self, request, *args, **kwargs):
+        equipment_entity = self.get_object()
+        return Response(instrumentation_serializers.EquipmentConfigurationSerializer(equipment_entity).data)
+
 
 class ProcessViewSet(viewsets.ModelViewSet):
     """
@@ -65,16 +80,70 @@ class ProcessViewSet(viewsets.ModelViewSet):
 
     @action(
         detail=True,
-        url_path='/configuration',
-        url_name='equipment_configuration',
+        url_path='configuration',
+        url_name='configuration',
         renderer_classes=[
             renderers.BrowsableAPIRenderer,
-            renderers.JSONRenderer
+            renderers.JSONRenderer,
+            renderers.StaticHTMLRenderer,
+            renderers.DocumentationRenderer
         ]
     )
     def configuration(self, request, *args, **kwargs):
         process_entity = self.get_object()
         return Response(process_entity.configuration)
+
+    @action(
+        detail=True,
+        url_path='executions',
+        url_name='executions',
+        renderer_classes=[
+            renderers.BrowsableAPIRenderer,
+            renderers.JSONRenderer,
+            renderers.StaticHTMLRenderer,
+            renderers.DocumentationRenderer
+        ]
+    )
+    def executions(self, request, *args, **kwargs):
+        process_entity = self.get_object()
+        return Response(instrumentation_serializers.ExecutionInfoSerializer(process_entity.executions, many=True).data)
+
+    @action(
+        detail=True,
+        url_path='execute',
+        url_name='execute',
+        renderer_classes=[
+            renderers.BrowsableAPIRenderer,
+            renderers.JSONRenderer,
+            renderers.StaticHTMLRenderer,
+            renderers.DocumentationRenderer
+        ]
+    )
+    def execute(self, request, *args, **kwargs):
+        try:
+
+            process_entity = self.get_object()
+            r = instumentation_tasks.process_execute_task.s(*args, **kwargs).apply_async(
+                queue=process_entity.name,
+                exchange=instumentation_models.Process.EXCHANGE_NAME,
+                routing_key='%s' % process_entity.name
+            )
+            execution = r.get(timeout=60)
+            return Response(execution)
+        except TimeoutError as te:
+            return Response(dict(error=str(te)))
+
+
+class ExecutionViewSet(viewsets.ModelViewSet):
+    """
+    This viewset automatically provides `list`, `create`, `retrieve`,
+    `update` and `destroy` actions.
+
+    Additionally we also provide an extra `highlight` action.
+    """
+    queryset = instumentation_models.Execution.objects.all()
+    serializer_class = instrumentation_serializers.ExecutionSerializer
+    permission_classes = [permissions.AllowAny]
     #
     # @action(detail=True, renderer_classes=[renderers.BrowsableAPIRenderer, renderers.JSONRenderer])
     # def schema(self, request, *args, **kwargs):

@@ -33,6 +33,9 @@ class NamedEntity(Entity, Content):
     def friendly_name(self):
         return self.display_name if self.display_name is not None else self.name
 
+    def __str__(self):
+        return self.friendly_name
+
 
 DATA_TYPE_TEXT = 'text'
 DATA_TYPE_NUMBER = 'number'
@@ -65,25 +68,30 @@ class Variable(NamedEntity):
 class Parameter(NamedEntity):
     data_type = models.CharField(max_length=100, choices=DATA_TYPES, default=DATA_TYPE_TEXT)
     default_value = models.CharField(max_length=100, null=True, blank=True, default=None)
+    required = models.NullBooleanField(default=None, null=True, blank=True)
+    minimum = models.FloatField(default=None, null=True, blank=True)
+    maximum = models.FloatField(default=None, null=True, blank=True)
 
     class Meta:
         abstract = True
 
 
 class Equipment(NamedEntity):
+    EXCHANGE_NAME = 'equipment'
+
     active = models.BooleanField(default=True)
 
     def create_queue(self, exchange: Exchange):
         queue = Queue(
             name=self.name,
             exchange=exchange,
-            routing_key='%s.#' % self.name)
+            routing_key='%s' % self.name)
         logger.info('Create queue %s:%s' % (exchange.name, queue.name))
         return queue
 
     @staticmethod
     def generate_queues():
-        exchange = Exchange('equipment', 'direct', durable=True)
+        exchange = Exchange(Equipment.EXCHANGE_NAME, 'direct', durable=True)
         return [e.create_queue(exchange=exchange) for e in Equipment.objects.filter(active=True)]
 
     @property
@@ -95,15 +103,18 @@ class EquipmentProperty(Parameter):
     equipment = models.ForeignKey(
         verbose_name=_('Equipment'),
         to=Equipment,
+        related_name='equipment_properties',
         on_delete=models.CASCADE
     )
 
 
 class Process(NamedEntity):
+    EXCHANGE_NAME = 'process'
+
     """
     Folyamat entitás.
     """
-    pass
+    equipments = models.ManyToManyField(to=Equipment, related_name='processes')
 
     @property
     def input_parameters(self):
@@ -123,16 +134,19 @@ class Process(NamedEntity):
         queue = Queue(
             name=self.name,
             exchange=exchange,
-            routing_key='%s.#' % self.name)
+            routing_key='%s' % self.name)
         logger.info('Create queue %s:%s' % (exchange.name, queue.name))
 
         return queue
 
     @staticmethod
     def generate_queues():
-        exchange = Exchange('process', 'direct', durable=True)
+        exchange = Exchange(Process.EXCHANGE_NAME, 'direct', durable=True)
         return [p.create_queue(exchange=exchange) for p in Process.objects.all()]
 
+    @property
+    def executions(self):
+        return Execution.objects.filter(process=self)
 
 class ProcessParameter(Parameter):
     process = models.ForeignKey(
@@ -172,7 +186,7 @@ class Execution(models.Model):
     def ingest_data(self, **kwargs):
         data_frame = DataFrame.objects.create(execution=self)
         data_frame.raw_data = kwargs
-        data_frame.save()
+        # data_frame.save()
         return data_frame
 
     def end(self):
@@ -228,18 +242,19 @@ class DataFrame(models.Model):
 
     def ingest_additional(self, **kwargs):
         self.additional = {**kwargs}
-        self.save()
+        # self.save()
         return self
 
     def ingest_indicators(self, **kwargs):
         self.indicators = {**kwargs}
-        self.save()
+        # self.save()
         return self
 
     def ingest_markers(self, **kwargs):
         self.markers_data = {**kwargs}
-        self.save()
+        # self.save()
         return self
 
-    def end(self):
-        return self.execution.end()
+    def flush(self):
+        self.save()
+        return self.execution

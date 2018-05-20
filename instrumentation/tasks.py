@@ -7,7 +7,7 @@ import traceback
 import celery
 import visa
 from asgiref.sync import async_to_sync
-from celery import shared_task
+from celery import shared_task, chain
 from celery.signals import task_prerun, task_postrun
 from celery.utils.log import get_task_logger
 from channels.layers import get_channel_layer
@@ -16,6 +16,8 @@ from django.utils import timezone
 
 from instrumentation.drivers import dm
 from instrumentation.models import Execution, Process, DataFrame
+from instrumentation import models as instrumentation_models
+from instrumentation import serializers as instrumentation_serializers
 
 logger = get_task_logger(__name__)
 
@@ -159,69 +161,6 @@ class RealtimeObserverMixin(object):
             "type": "resource_terminal",
             "error": kwargs
         })
-
-
-@task_prerun.connect
-def task_prerun_handler(signal=None, sender=None, task_id=None, task=None, *args, **kwargs):
-    """
-    Setup device context
-    :param signal:
-    :param sender:
-    :param task_id:
-    :param task:
-    :param args:
-    :param kwargs:
-    :return:
-    """
-    try:
-        logger.info('===================================')
-        logger.info('TASK: %s[%s]' % (task.name, task_id))
-        logger.info('DELIVERY: %s' % task.request.delivery_info)
-        logger.info('Positional: %s' % list(args))
-        logger.info('Key-values: %s' % json.dumps(kwargs))
-
-        task.resource = dm.device(task.slug).resource
-        logger.info('VISA: %s' % task.resource.resource_name)
-        with transaction.atomic():
-            task.load_configuration()
-        logger.info('ENTITY: %s' % task.entity.id)
-
-        task.begin_timestamp = task.now()
-        task.socket_name = 'terminal_' + task.slug
-
-        logger.info('-----------------------------------')
-    except BaseException as e:
-        traceback.print_exc()
-
-
-@task_postrun.connect()
-def task_postrun(signal=None, sender=None, task_id=None, task=None, retval=None, state=None, *args, **kwargs):
-    """
-    Cleanup
-    :param signal:
-    :param sender:
-    :param task_id:
-    :param task:
-    :param retval:
-    :param state:
-    :param args:
-    :param kwargs:
-    :return:
-    """
-    try:
-        logger.info('-----------------------------------')
-        logger.info('TASK: %s[%s]' % (task.name, task_id))
-        logger.info('RETVAL: %s' % retval)
-        logger.info('STATE: %s' % state)
-        logger.info('===================================')
-
-        task.end_timestamp = task.now()
-
-        # task.resource
-        with transaction.atomic():
-            task.save_configuration()
-    except BaseException as e:
-        traceback.print_exc()
 
 
 #
@@ -506,11 +445,16 @@ class ProcessTask(celery.Task, ConfigurableMixin):
 
     def __init__(self) -> None:
         super().__init__()
-        logger.info('Initialize process task')
+        self._channel_layer = None
+    #     logger.info('Initialize process task')
 
-    def __call__(self, *args, **kwargs):
-        logger.info('Call process task')
-        return super().__call__(*args, **kwargs)
+    @property
+    def slug(self) -> str:
+        return self.request.delivery_info['routing_key']
+
+    # def __call__(self, *args, **kwargs):
+    #     logger.info('Call process task')
+    #     return super().__call__(*args, **kwargs)
 
     def on_success(self, retval, task_id, args, kwargs):
         super().on_success(retval, task_id, args, kwargs)
@@ -521,7 +465,7 @@ class ProcessTask(celery.Task, ConfigurableMixin):
         logger.debug(args)
         logger.debug(kwargs)
 
-        self.persist_frame(**retval)
+        # self.persist_frame(**retval)
 
     def on_failure(self, exc, task_id, args, kwargs, einfo):
         super().on_failure(exc, task_id, args, kwargs, einfo)
@@ -551,8 +495,8 @@ class ProcessTask(celery.Task, ConfigurableMixin):
     def persist(self, **kwargs) -> DataFrame:
         self.execution.ingest_data(**kwargs)
 
-    def create_instance(self, **kwargs) -> Execution:
-        self._execution = Process.objects.begin(**kwargs)
+    def create_instance(self, **kwargs):
+        self._execution = Process.objects.get(name=self.slug).begin(**kwargs)
         return self._execution
 
     def emit(self, room, resource, **kwargs):
@@ -565,7 +509,7 @@ class ProcessTask(celery.Task, ConfigurableMixin):
         self.emit(room='execution_%s' % self.execution.id, resource='resource_graph', **kwargs)
 
     def emit_state(self, **kwargs):
-        self.emit(room='queues', resource='resource_graph', **kwargs)
+        self.emit(room='engine', resource='resource_state', **kwargs)
 
 
 @shared_task(bind=True, base_task=ProcessTask)
@@ -583,14 +527,123 @@ def long_running_task(self, start, stop, step):
     time.sleep(1)
     self.update_state(state="PROGRESS", meta={'progress': 90})
     time.sleep(1)
-    return 'hello world: %i' % (a + b)
+    return 'hello world: %i' % ('dd')
 
 
 def configure_equipment(self, equipment_id, **kwargs):
     pass
 
 
-@shared_task(bind=True, base_task=ProcessTask)
-def run_process(self, *args, **kwargs):
-    execution = self.create_instance(**kwargs)
+@task_prerun.connect  # (sender='instrumentation.tasks.run_process')
+def task_prerun_handler(signal=None, sender=None, task_id=None, task=None, *args, **kwargs):
+    """
+    Setup device context
+    :param signal:
+    :param sender:
+    :param task_id:
+    :param task:
+    :param args:
+    :param kwargs:
+    :return:
+    """
+    try:
+        logger.info('===================================')
+        logger.info('TASK: %s[%s]' % (task.name, task_id))
+        logger.info('DELIVERY: %s' % task.request.delivery_info)
+        logger.info('Positional: %s' % list(args))
+        logger.info('Key-values: %s' % json.dumps(kwargs))
 
+        # task.process
+
+        # task.resource = dm.device(task.slug).resource
+        # logger.info('VISA: %s' % task.resource.resource_name)
+        # with transaction.atomic():
+        #     task.load_configuration()
+        # logger.info('ENTITY: %s' % task.entity.id)
+        #
+        # task.begin_timestamp = task.now()
+        # task.socket_name = 'terminal_' + task.slug
+
+        logger.info('-----------------------------------')
+    except BaseException as e:
+        traceback.print_exc()
+
+
+@task_postrun.connect  # (sender=[ProcessTask.name])
+def task_postrun(signal=None, sender=None, task_id=None, task=None, retval=None, state=None, *args, **kwargs):
+    """
+    Cleanup
+    :param signal:
+    :param sender:
+    :param task_id:
+    :param task:
+    :param retval:
+    :param state:
+    :param args:
+    :param kwargs:
+    :return:
+    """
+    try:
+        logger.info('-----------------------------------')
+        logger.info('TASK: %s[%s]' % (task.name, task_id))
+        logger.info('RETVAL: %s' % retval)
+        logger.info('STATE: %s' % state)
+        logger.info('===================================')
+
+        # task.end_timestamp = task.now()
+
+        # task.resource
+        # with transaction.atomic():
+        #     task.save_configuration()
+    except BaseException as e:
+        traceback.print_exc()
+
+
+@shared_task(bind=True, base=ProcessTask)
+def process_configure_task(self, configuration, options):
+    self.execution.configuration = {**configuration}
+    self.execution.save()
+    return self.execution.configuration
+
+
+@shared_task(bind=True, base=ProcessTask)
+def process_iterator_task(self, configuration, start, stop, step):
+    for i in range(start, stop, step):
+        logger.info('Iteration %s ...' % i)
+        self.update_state(state=instrumentation_models.EXECUTION_STATE_RUNNING, meta={'progress': i})
+        self.sleep(sleep_time=5)
+    print('-------------------------')
+    return self.execution
+
+
+@shared_task(bind=True, base=ProcessTask)
+def process_execute_task(self, **kwargs):
+    try:
+
+        execution = self.create_instance(**kwargs)
+        self.emit_state(
+            queues=[dict(
+                slug=self.slug,
+                state=execution.state
+            )]
+        )
+
+        execution.ingest_data(
+            kacsa='kacsa'
+        ).flush().end()
+
+        self.emit_state(
+            queues=[dict(
+                slug=self.slug,
+                state=execution.state
+            )]
+        )
+
+        return dict(
+            process_name=execution.process.name,
+            execution_id=execution.id,
+            state=execution.state
+        )
+
+    except BaseException as e:
+        traceback.print_exc()

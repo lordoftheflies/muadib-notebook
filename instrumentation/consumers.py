@@ -131,10 +131,10 @@ class VisualizationConsumer(AsyncJsonWebsocketConsumer):
 class TaskConsumer(AsyncJsonWebsocketConsumer):
 
     async def connect(self):
-        self.resource_name = self.scope['url_route']['kwargs']['resource_name']
-        self.resource_group_name = 'terminal_%s' % self.resource_name
+        # self.resource_name = self.scope['url_route']['kwargs']['resource_name']
+        self.resource_group_name = 'engine'
 
-        logger.info('"%s" connected to websocket-bridge "%s".' % (self.resource_name, self.resource_group_name))
+        logger.info('Connected to websocket-bridge "%s".' % (self.resource_group_name))
 
         # Join room group
         await self.channel_layer.group_add(
@@ -158,7 +158,7 @@ class TaskConsumer(AsyncJsonWebsocketConsumer):
         print('---------------------------------------------------------------')
 
         # text_data_json = json.loads(content)
-        message = content
+        message = json.loads(content)
 
         # Send message to room group
         await self.channel_layer.group_send(

@@ -209,6 +209,7 @@ class BaseConfiguration(Configuration):
         "PolymerElements/app-route#^2.0.0",
         "PolymerElements/iron-ajax#^2.1.3",
         "PolymerElements/iron-flex-layout#^2.0.0",
+        "PolymerElements/iron-collapse#^2.0.0",
         "PolymerElements/iron-iconset-svg#^2.0.0",
         "PolymerElements/iron-icon",
         "PolymerElements/iron-image#^2.2.0",

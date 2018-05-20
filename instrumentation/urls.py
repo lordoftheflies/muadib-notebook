@@ -6,6 +6,7 @@ from instrumentation import views
 router = DefaultRouter()
 router.register(r'equipments', views.EquipmentViewSet)
 router.register(r'processes', views.ProcessViewSet)
+router.register(r'executions', views.ExecutionViewSet)
 
 # The API URLs are now determined automatically by the router.
 urlpatterns = [

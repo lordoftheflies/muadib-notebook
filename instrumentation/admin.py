@@ -17,6 +17,7 @@ class EquipmentPropertyInline(admin.TabularInline):
     ]
 
 
+
 class ProcessParameterInline(admin.TabularInline):
     model = instrumentation_model.ProcessParameter
     extra = 0
@@ -26,7 +27,7 @@ class ProcessParameterInline(admin.TabularInline):
         'description',
         'data_type',
         'default_value',
-        'process'
+        'process',
     ]
 
 
@@ -40,3 +41,4 @@ class EquipmentAdmin(admin.ModelAdmin):
 class ProcessAdmin(admin.ModelAdmin):
     list_display = ['id', 'name', 'display_name', 'description']
     inlines = [ProcessParameterInline]
+    filter_horizontal = ('equipments',)
